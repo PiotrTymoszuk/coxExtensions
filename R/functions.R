@@ -34,9 +34,9 @@
 
     ## meta information
 
-    mod_frame <- model.frame(cox_model)[, -1]
+    mod_frame <- model.frame(cox_model)
 
-    modeling_vars <- names(mod_frame)
+    modeling_vars <- names(mod_frame)[-1]
 
     extr_regex <- paste(modeling_vars, collapse = '|')
 
