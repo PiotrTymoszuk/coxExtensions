@@ -37,6 +37,6 @@ Calculates fit statistics for a CoxPH model: AIC (Akaike
 information criterion), BIC (Bayesian information criterion), raw_rsq
 (unadjusted R-squared, cod, mer or mev/default, see:
 \code{\link[survMisc]{rsq}}), MAE (mean absolute error), MSE
-(mean squared error), RMSE (root MSE) and C-index with 95% confidence
+(mean squared error), RMSE (root MSE) and C-index with 95\% confidence
 intervals (normality assumption).
 }

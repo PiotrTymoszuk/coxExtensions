@@ -12,7 +12,9 @@ LazyData: true
 Imports: 
     broom,
     dplyr,
+    forcats,
     ggplot2,
+    grDevices,
     lmqc,
     purrr,
     rlang,
@@ -21,7 +23,8 @@ Imports:
     survminer,
     survMisc,
     tibble
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
+Roxygen: list(markdown = TRUE)
 Authors@R: 
     person("Piotr", "Tymoszuk", , "piotr.s.tymoszuk@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0398-6034"))
