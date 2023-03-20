@@ -9,12 +9,20 @@
 #' @return a data frame with the model estimates, confidence intervals
 #' and p values.
 #' @param cox_model a CoxpPH model or a coxex object.
-#' @param transf_fun function used for transformation of the estimates and
+#' @param trans_function function used for transformation of the estimates and
 #' confidence intervals, identity() by default.
 #' @param ... extra arguments, currently none.
+#' @references
+#' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+#' the Cox Model. (Springer Verlag, 2000).
+#' @md
 #' @export
 
   get_cox_estimates <- function(cox_model, trans_function = identity, ...) {
+
+    ## suppressing R-CMD check notes on NSE variables
+
+    estimate <- parameter <- variable <- level <- NULL
 
     ## entry control
 
@@ -75,7 +83,7 @@
     ## counting the n for the
 
     mod_counts <- purrr::map_dfr(modeling_vars,
-                                 ~lmqc:::count_(data = mod_frame, variable = .x))
+                                 ~count_(data = mod_frame, variable = .x))
 
     mod_counts <- dplyr::mutate(mod_counts,
                                 parameter = paste0(variable, level))
@@ -118,12 +126,20 @@
 #' @param data the data frame used for the model construction. Ignored,
 #' if coxex object provided.
 #' @param ... additional arguments passed to \code{\link[broom]{augment}}.
+#' @references
+#' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+#' the Cox Model. (Springer Verlag, 2000).
+#' @md
 #' @export
 
   get_cox_qc <- function(cox_model,
                          type.predict = 'lp',
                          type.residuals = 'martingale',
                          data = NULL, ...) {
+
+    ## suppressing a R-CMD-check note on NSE variables
+
+    .resid <- .std.resid <- NULL
 
     ## entry control
 
@@ -143,10 +159,10 @@
 
     ## computation
 
-    resid_tbl <- broom:::augment.coxph(x = cox_model,
-                                       data = data,
-                                       type.predict = type.predict,
-                                       type.residuals = type.residuals, ...)
+    resid_tbl <- broom::augment(x = cox_model,
+                                data = data,
+                                type.predict = type.predict,
+                                type.residuals = type.residuals, ...)
 
     resid_tbl <- dplyr::mutate(resid_tbl,
                                .std.resid = scale(.resid)[, 1],
@@ -154,7 +170,7 @@
                                .sq.std.resid = .std.resid^2,
                                .candidate_missfit = ifelse(abs(.std.resid) > qnorm(0.975), 'yes', 'no'))
 
-    lmqc:::calc_expected_(resid_tbl, '.std.resid')
+    calc_expected_(resid_tbl, '.std.resid')
 
   }
 
@@ -172,6 +188,13 @@
 #' @param rsq_type type of R-quared statistic, see: \code{\link[survMisc]{rsq}}.
 #' @param ... extra arguments passed to \code{\link{get_cox_qc}}.
 #' @inheritParams get_cox_qc
+#' @references
+#' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+#' the Cox Model. (Springer Verlag, 2000).
+#' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+#' models: Issues in developing models, evaluating assumptions and adequacy,
+#' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#' @md
 #' @export
 
   get_cox_stats <- function(cox_model,
@@ -204,7 +227,7 @@
 
     ## concordance
 
-    c_index <- unname(survival:::summary.coxph(cox_model)$concordance)
+    c_index <- unname(summary(cox_model)$concordance)
 
     se <- c_index[2]
 
@@ -253,6 +276,10 @@
 #' global model.
 #' @inheritParams get_cox_qc
 #' @param ... extra arguments passed to \code{\link{get_cox_qc}}
+#' @references
+#' * Grambsch, P. M. & Therneau, T. M. Proportional Hazards Tests and
+#' Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
+#' @md
 #' @export
 
   get_cox_assumptions <- function(cox_model,
@@ -260,7 +287,9 @@
                                   type.residuals = 'martingale',
                                   data = NULL, ...) {
 
-    ## entry controls
+    ## suppression of R-CMD-check notes concerining global variables
+
+    chisq <- p <- NULL
 
     ## entry control
 
@@ -354,17 +383,35 @@
 #' and p value for the global linear predictor score.
 #'
 #' @param cox_model a CoxpPH model or a coxex object.
+#' @param fit a CoxpPH model or a coxex object.
 #' @param n a single numeric defining the number of quantile intervals.
 #' @param labels an optional user-provided vector of labels for
 #' the quantile intervals.
 #' @param right logical, indicating if the quantile intervals should be closed
 #' on the right (and open on the left) or vice versa.
+#' @param ... additional arguments, currently none.
+#' @references
+#' * D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
+#' Survival Analysis Models: Discrimination and Calibration Measures.
+#' Handb. Stat. 23, 1–25 (2003).
+#' * Royston, P. Tools for checking calibration of a Cox model in external
+#' validation: Approach based on individual event probabilities.
+#' Stata J. 14, 738–755 (2014).
+#' * Crowson, C. S. et al. Assessing calibration of prognostic risk
+#' scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+#' @md
 #' @export
 
   get_cox_calibration <- function(cox_model,
                                   n = 3,
                                   labels = NULL,
                                   right = FALSE) {
+
+    ## to suppress the R-CMD-check note caused by variables in NSE
+
+    strata <- n.event <- .data <- surv <- prob <- NULL
+    km_events <- cox_events <- km_prob <- cox_prob <- NULL
+    sq_resid <- rr <- x2_dn <- label <- NULL
 
     ## entry control
 
@@ -527,3 +574,5 @@
     eval(rlang::call2('calibrator', !!!results))
 
   }
+
+# END -----

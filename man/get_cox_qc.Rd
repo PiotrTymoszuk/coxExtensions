@@ -34,3 +34,9 @@ values for the residuals.
 Retrieves model residuals and predicted values.
 A wrapper around \code{\link[broom]{augment}}.
 }
+\references{
+\itemize{
+\item Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+the Cox Model. (Springer Verlag, 2000).
+}
+}

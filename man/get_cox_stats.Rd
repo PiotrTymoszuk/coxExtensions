@@ -40,3 +40,12 @@ information criterion), BIC (Bayesian information criterion), raw_rsq
 (mean squared error), RMSE (root MSE) and C-index with 95\% confidence
 intervals (normality assumption).
 }
+\references{
+\itemize{
+\item Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+the Cox Model. (Springer Verlag, 2000).
+\item Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+models: Issues in developing models, evaluating assumptions and adequacy,
+and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+}
+}

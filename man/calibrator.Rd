@@ -44,3 +44,15 @@ Contains all data used in calculation of Cox model calibration with the
 D'Agostino-Nam method (DOI: 10.1016/S0169-7161(03)23001-7) and visualization
 of the results.
 }
+\references{
+\itemize{
+\item D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
+Survival Analysis Models: Discrimination and Calibration Measures.
+Handb. Stat. 23, 1–25 (2003).
+\item Royston, P. Tools for checking calibration of a Cox model in external
+validation: Approach based on individual event probabilities.
+Stata J. 14, 738–755 (2014).
+\item Crowson, C. S. et al. Assessing calibration of prognostic risk
+scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+}
+}

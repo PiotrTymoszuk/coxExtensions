@@ -22,6 +22,16 @@
 #' @param global_calibration a data frame with the global
 #' calibration statistics.
 #' @return an instance of 'calibrator' class.
+#' @references
+#' * D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
+#' Survival Analysis Models: Discrimination and Calibration Measures.
+#' Handb. Stat. 23, 1–25 (2003).
+#' * Royston, P. Tools for checking calibration of a Cox model in external
+#' validation: Approach based on individual event probabilities.
+#' Stata J. 14, 738–755 (2014).
+#' * Crowson, C. S. et al. Assessing calibration of prognostic risk
+#' scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+#' @md
 #' @export
 
   calibrator <- function(lp_scores,
@@ -98,7 +108,7 @@
 
   is_calibrator <- function(x) {
 
-    all(class(x) == 'calibrator')
+    inherits(x, 'calibrator')
 
   }
 
@@ -109,12 +119,12 @@
 #' @description Prints a coxex model.
 #' @param x a calibrator object.
 #' @param ... extra arguments, none specified.
-#' @return none, called fot it's side effects.
+#' @return none, called for its side effects.
 #' @export
 
   print.calibrator <- function(x, ...) {
 
-    stopifnot(coxExtensions::is_calibrator(x))
+    stopifnot(is_calibrator(x))
 
     print(x$global_calibration)
 
@@ -130,11 +140,12 @@
 #' @param ... extra arguments, currently none.
 #' @return a data frame with the number of total complete observations and
 #' events for each linear predictor score strata.
+#' @import stats
 #' @export
 
   nobs.calibrator<- function(object, ...) {
 
-    stopifnot(coxExtensions::is_calibrator(object))
+    stopifnot(is_calibrator(object))
 
     if('label' %in% names(object$strata_calibration)) {
 
@@ -162,12 +173,22 @@
 #' @param object a calibrator object.
 #' @param type type of the calibration statistic: 'global' (default) or 'strata'.
 #' @param ... additional arguments, currently none.
+#' @references
+#' * D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
+#' Survival Analysis Models: Discrimination and Calibration Measures.
+#' Handb. Stat. 23, 1–25 (2003).
+#' * Royston, P. Tools for checking calibration of a Cox model in external
+#' validation: Approach based on individual event probabilities.
+#' Stata J. 14, 738–755 (2014).
+#' * Crowson, C. S. et al. Assessing calibration of prognostic risk
+#' scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+#' @md
 #' @export summary.calibrator
 #' @export
 
   summary.calibrator <- function(object, type = c('global', 'strata'), ...) {
 
-    stopifnot(coxExtensions::is_calibrator(object))
+    stopifnot(is_calibrator(object))
 
     type <- match.arg(type[1], c('global', 'strata'))
 
@@ -192,32 +213,39 @@
 #' @return a ggplot object.
 #' @param x a calibrator object.
 #' @param palette a vector of color names corresponding to the strata number.
-#' @param plot_title plot title text.
-#' @param x_lab X axis label.
 #' @param cust_theme custom ggplot theme.
 #' @param KM_size size of the Kaplan-Meier plot line.
+#' @param show_cox logical, should the Cox model-predicted survival for
+#' the strata be plotted?
 #' @param cox_size size of the Cox survival plot line.
+#' Ignored if `show_cox` is set to FALSE.
 #' @param cox_linetype type of the Cox survival plot line, dashed by default.
+#' Ignored if `show_cox` is set to FALSE.
 #' @param color_seed seed for the random color generator, ignored
 #' if palette provided.
 #' @param signif_digits significant digits for rounding the calibration
 #' statistics displayed in the plot caption.
+#' @param ... extra arguments passed to \code{\link[survminer]{ggsurvplot}}.
+#' @export plot.calibrator
 #' @export
 
   plot.calibrator <- function(x,
                               palette = NULL,
-                              plot_title = NULL,
-                              x_lab = 'Survival',
                               cust_theme = survminer::theme_survminer(),
                               KM_size = 0.5,
-                              cox_size = 0.7,
+                              show_cox = TRUE,
+                              cox_size = 0.5,
                               cox_linetype = 'dashed',
                               color_seed = 1234,
-                              signif_digits = 2) {
+                              signif_digits = 2, ...) {
+
+    ## suppression of a R-CMD-check note on NSE variables
+
+    x2_dn <- p_value <- strata <- prob <- NULL
 
     ## entry control
 
-    stopifnot(coxExtensions::is_calibrator(x))
+    stopifnot(is_calibrator(x))
 
     if(!ggplot2::is.theme(cust_theme)) {
 
@@ -242,7 +270,8 @@
 
     if(length(palette) != n_strata) {
 
-      stop(paste0('Number of colors provided in palette must be equal to the strata number (n = ',
+      stop(paste0('Number of colors provided in palette must be equal',
+                  ' to the strata number (n = ',
                   n_strata, ')'),
            call. = FALSE)
 
@@ -304,15 +333,15 @@
 
     km_plot <- survminer::ggsurvplot(fit = plot_data,
                                      palette = palette,
-                                     legend = 'right',
                                      legend.labs = strata_tags,
-                                     title = plot_title,
-                                     xlab = x_lab,
-                                     ggtheme = cust_theme)
+                                     ggtheme = cust_theme,
+                                     size = KM_size, ...)
 
     km_plot <- km_plot +
       ggplot2::labs(subtitle = plot_subtitle,
                     tag = plot_tag)
+
+    if(!show_cox) return(km_plot)
 
     ## adding the Cox predictions
 
@@ -343,7 +372,5 @@
     return(km_plot)
 
   }
-
-
 
 # END ------

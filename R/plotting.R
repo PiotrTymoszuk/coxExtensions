@@ -44,14 +44,15 @@
 
     ## plotting list
 
-    qc_plotting_lst <- list(x_var = c('.fitted', '.fitted', '.fitted', '.expect.norm'),
-                            y_var = c('.resid', '.std.resid', '.sq.std.resid', '.std.resid'),
-                            plot_title = c('Residuals vs. fitted',
-                                           'Standardized residuals vs. fitted',
-                                           'Sqared residuals vs. fitted',
-                                           'QQ standardized residuals vs expected normal'),
-                            method = c('loess', 'loess', 'loess', 'lm'),
-                            smooth = c(TRUE, TRUE, TRUE, TRUE))
+    qc_plotting_lst <-
+      list(x_var = c('.fitted', '.fitted', '.fitted', '.expect.norm'),
+           y_var = c('.resid', '.std.resid', '.sq.std.resid', '.std.resid'),
+           plot_title = c('Residuals vs. fitted',
+                          'Standardized residuals vs. fitted',
+                          'Sqared residuals vs. fitted',
+                          'QQ standardized residuals vs expected normal'),
+           method = c('loess', 'loess', 'loess', 'lm'),
+           smooth = c(TRUE, TRUE, TRUE, TRUE))
 
     plot_names <- c('resid_fitted',
                     'std.resid_fitted',
@@ -61,7 +62,7 @@
     ## plotting
 
     qc_plots <- purrr::pmap(qc_plotting_lst,
-                            lmqc:::point_plot_,
+                            point_plot_,
                             data = qc_tbl,
                             cust_theme = cust_theme)
 
@@ -87,6 +88,10 @@
                            data = NULL,
                            palette = c('steelblue', 'firebrick'),
                            cust_theme = survminer::theme_survminer(), ...) {
+
+    ## suppression of a R-CMD-check note on NSE variables
+
+    raw_rsq <- c_index <- lower_ci <- upper_ci <- NULL
 
     ## entry control
 
@@ -150,3 +155,4 @@
 
   }
 
+# END ------

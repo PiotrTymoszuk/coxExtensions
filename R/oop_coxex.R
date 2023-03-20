@@ -47,7 +47,7 @@
 
   as_coxex <- function(cox_model, data) {
 
-    coxExtensions::coxex(cox_model, data)
+    coxex(cox_model, data)
 
   }
 
@@ -66,7 +66,7 @@
 
   }
 
-# Coertion -----
+# Coercion -----
 #'
 #' Convert to a coxph class.
 #'
@@ -77,7 +77,7 @@
 
   as_coxph <- function(x) {
 
-    stopifnot(coxExtensions::is_coxex(x))
+    stopifnot(is_coxex(x))
 
     x$model
 
@@ -90,12 +90,12 @@
 #' @description Prints a coxex model.
 #' @param x a coxex object.
 #' @param ... extra arguments, none specified.
-#' @return none, called fot it's side effects.
+#' @return none, called for its side effects.
 #' @export
 
   print.coxex <- function(x, ...) {
 
-    stopifnot(coxExtensions::is_coxex(x))
+    stopifnot(is_coxex(x))
 
     print(x$model)
 
@@ -111,11 +111,12 @@
 #' @param ... extra arguments, currently none.
 #' @return a data frame with the number of total complete observations and
 #' events.
+#' @import stats
 #' @export
 
   nobs.coxex <- function(object, ...) {
 
-    stopifnot(coxExtensions::is_coxex(object))
+    stopifnot(is_coxex(object))
 
     surv <- unclass(model.frame(object$model)[, 1])
 
@@ -141,7 +142,7 @@
   model.frame.coxex <- function(formula,
                                 type = c('model_frame', 'data', 'surv'), ...) {
 
-    stopifnot(coxExtensions::is_coxex(formula))
+    stopifnot(is_coxex(formula))
 
     type <- match.arg(type[1], c('model_frame', 'data', 'surv'))
 
@@ -162,7 +163,7 @@
 
   formula.coxex <- function(x, ...) {
 
-    stopifnot(coxExtensions::is_coxex(x))
+    stopifnot(is_coxex(x))
 
     formula(x$model)
 
@@ -179,15 +180,26 @@
 #' @param object a coxex object.
 #' @param ... additional arguments passed to \code{\link{get_cox_qc}}.
 #' @export residuals.coxex
+#' @references
+#' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+#' the Cox Model. (Springer Verlag, 2000).
+#' @md
 #' @export
 
   residuals.coxex <- function(object, ...) {
 
-    stopifnot(coxExtensions::is_coxex(object))
+    stopifnot(is_coxex(object))
 
-    coxExtensions::get_cox_qc(cox_model = object, ...)
+    get_cox_qc(cox_model = object, ...)
 
   }
+
+#' @rdname residuals.coxex
+#' @import stats
+#' @export resid.coxex
+#' @export
+
+  resid.coxex <- residuals.coxex
 
 #' Prediction for the coxex class.
 #'
@@ -203,9 +215,9 @@
 
   predict.coxex <- function(object, ...) {
 
-    stopifnot(coxExtensions::is_coxex(object))
+    stopifnot(is_coxex(object))
 
-    survival:::predict.coxph(object = object$model, ...)
+    predict(object = object$model, ...)
 
   }
 
@@ -224,20 +236,50 @@
 #' @param type statistic type, 'inference' by default.
 #' @param ... extra arguments passed to \code{\link{get_cox_estimates}},
 #' \code{\link{get_cox_stats}} or \code{\link{get_cox_assumptions}}.
+#' @references
+#' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+#' the Cox Model. (Springer Verlag, 2000).
+#' * Grambsch, P. M. & Therneau, T. M. Proportional Hazards Tests and
+#' Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
+#' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+#' models: Issues in developing models, evaluating assumptions and adequacy,
+#' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#' @md
 #' @export summary.coxex
 #' @export
 
   summary.coxex <- function(object,
                             type = c('inference', 'fit', 'assumptions'), ...) {
 
-    stopifnot(coxExtensions::is_coxex(object))
+    stopifnot(is_coxex(object))
 
     type <- match.arg(type[1], c('inference', 'fit', 'assumptions'))
 
     switch(type,
-           inference = coxExtensions::get_cox_estimates(object, ...),
-           fit = coxExtensions::get_cox_stats(object, ...),
-           assumptions = coxExtensions::get_cox_assumptions(object, ...))
+           inference = get_cox_estimates(object, ...),
+           fit = get_cox_stats(object, ...),
+           assumptions = get_cox_assumptions(object, ...))
+
+  }
+
+# Calibration -------
+
+#' @rdname get_cox_calibration
+#' @importFrom rms calibrate
+#' @export calibrate.coxex
+#' @export
+
+  calibrate.coxex <- function(fit,
+                              n = 3,
+                              labels = NULL,
+                              right = FALSE, ...) {
+
+    stopifnot(is_coxex(fit))
+
+    get_cox_calibration(cox_model = fit,
+                        n = n,
+                        labels = labels,
+                        right = right)
 
   }
 
@@ -262,17 +304,17 @@
 
     ## entry control
 
-    stopifnot(coxExtensions::is_coxex(x))
+    stopifnot(is_coxex(x))
 
     type <- match.arg(type, c('fit', 'residuals'))
 
     ## plotting
 
     switch(type,
-           residuals = coxExtensions::get_cox_qc_plots(cox_model = x,
+           residuals = get_cox_qc_plots(cox_model = x,
                                                        cust_theme = cust_theme,
                                                        ...),
-           fit = coxExtensions::plot_cox_fit(cox_model = x,
+           fit = plot_cox_fit(cox_model = x,
                                              cust_theme = cust_theme,
                                              ...))
 

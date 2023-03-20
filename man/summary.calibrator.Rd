@@ -24,3 +24,15 @@ relative risk (rr: Kaplan-Meier to Cox ratio) and
 the D'Agostino-Nam chi-squared statistic (x2_dn) for each strata
 (type = 'strata') or for the entire model (type = 'global').
 }
+\references{
+\itemize{
+\item D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
+Survival Analysis Models: Discrimination and Calibration Measures.
+Handb. Stat. 23, 1–25 (2003).
+\item Royston, P. Tools for checking calibration of a Cox model in external
+validation: Approach based on individual event probabilities.
+Stata J. 14, 738–755 (2014).
+\item Crowson, C. S. et al. Assessing calibration of prognostic risk
+scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+}
+}

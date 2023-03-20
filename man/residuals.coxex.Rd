@@ -2,9 +2,12 @@
 % Please edit documentation in R/oop_coxex.R
 \name{residuals.coxex}
 \alias{residuals.coxex}
+\alias{resid.coxex}
 \title{Extended residuals of a coxex object.}
 \usage{
 \method{residuals}{coxex}(object, ...)
+
+\method{resid}{coxex}(object, ...)
 }
 \arguments{
 \item{object}{a coxex object.}
@@ -18,4 +21,10 @@ values for the residuals.
 \description{
 Retrieves model residuals and predicted values.
 A wrapper around \code{\link[broom]{augment}}.
+}
+\references{
+\itemize{
+\item Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+the Cox Model. (Springer Verlag, 2000).
+}
 }

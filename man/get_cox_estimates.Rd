@@ -9,10 +9,10 @@ get_cox_estimates(cox_model, trans_function = identity, ...)
 \arguments{
 \item{cox_model}{a CoxpPH model or a coxex object.}
 
-\item{...}{extra arguments, currently none.}
-
-\item{transf_fun}{function used for transformation of the estimates and
+\item{trans_function}{function used for transformation of the estimates and
 confidence intervals, identity() by default.}
+
+\item{...}{extra arguments, currently none.}
 }
 \value{
 a data frame with the model estimates, confidence intervals
@@ -21,4 +21,10 @@ and p values.
 \description{
 Retrieves inference statistic for a Cox proportional hazard
 model. A wrapper around \code{\link[survival]{summary.coxph}}.
+}
+\references{
+\itemize{
+\item Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+the Cox Model. (Springer Verlag, 2000).
+}
 }

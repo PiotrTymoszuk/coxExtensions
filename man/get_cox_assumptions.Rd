@@ -36,3 +36,9 @@ Checks the normality and proportional hazard assumption for
 a CoxPH model. Technically, the normality assumption is tested with
 Shapiro-wil test, the proportionality by \code{\link[survival]{cox.zph}}.
 }
+\references{
+\itemize{
+\item Grambsch, P. M. & Therneau, T. M. Proportional Hazards Tests and
+Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
+}
+}

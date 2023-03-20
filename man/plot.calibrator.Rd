@@ -7,14 +7,14 @@
 \method{plot}{calibrator}(
   x,
   palette = NULL,
-  plot_title = NULL,
-  x_lab = "Survival",
   cust_theme = survminer::theme_survminer(),
   KM_size = 0.5,
-  cox_size = 0.7,
+  show_cox = TRUE,
+  cox_size = 0.5,
   cox_linetype = "dashed",
   color_seed = 1234,
-  signif_digits = 2
+  signif_digits = 2,
+  ...
 )
 }
 \arguments{
@@ -22,23 +22,26 @@
 
 \item{palette}{a vector of color names corresponding to the strata number.}
 
-\item{plot_title}{plot title text.}
-
-\item{x_lab}{X axis label.}
-
 \item{cust_theme}{custom ggplot theme.}
 
 \item{KM_size}{size of the Kaplan-Meier plot line.}
 
-\item{cox_size}{size of the Cox survival plot line.}
+\item{show_cox}{logical, should the Cox model-predicted survival for
+the strata be plotted?}
 
-\item{cox_linetype}{type of the Cox survival plot line, dashed by default.}
+\item{cox_size}{size of the Cox survival plot line.
+Ignored if \code{show_cox} is set to FALSE.}
+
+\item{cox_linetype}{type of the Cox survival plot line, dashed by default.
+Ignored if \code{show_cox} is set to FALSE.}
 
 \item{color_seed}{seed for the random color generator, ignored
 if palette provided.}
 
 \item{signif_digits}{significant digits for rounding the calibration
 statistics displayed in the plot caption.}
+
+\item{...}{extra arguments passed to \code{\link[survminer]{ggsurvplot}}.}
 }
 \value{
 a ggplot object.

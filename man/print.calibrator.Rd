@@ -12,7 +12,7 @@
 \item{...}{extra arguments, none specified.}
 }
 \value{
-none, called fot it's side effects.
+none, called for its side effects.
 }
 \description{
 Prints a coxex model.

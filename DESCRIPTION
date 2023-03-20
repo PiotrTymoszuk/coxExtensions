@@ -1,11 +1,12 @@
 Package: coxExtensions
 Type: Package
 Title: Extended Inference and Goodness of Fit for Cox Models
-Version: 0.1.0
+Version: 0.2.0
 Maintainer: Piotr Tymoszuk <piotr.s.tymoszuk@gmail.com>
 Description: Extends the toolbox for Cox proportional hazard models 
-    (survival, SurvMisc) with inference statistic, goodness of fit and 
-    diagnostic functions compatible with the tidyverse format.
+    (survival, SurvMisc) with inference statistic, goodness of fit,  
+    diagnostic functions and clibration tests compatible 
+    with the tidyverse format.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -14,8 +15,9 @@ Imports:
     dplyr,
     forcats,
     ggplot2,
+    ggrepel,
     grDevices,
-    lmqc,
+    plyr,
     purrr,
     rlang,
     stringi,
@@ -23,8 +25,11 @@ Imports:
     survminer,
     survMisc,
     tibble
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Authors@R: 
     person("Piotr", "Tymoszuk", , "piotr.s.tymoszuk@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0398-6034"))
+Depends: 
+    rms,
+    stats

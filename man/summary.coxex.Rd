@@ -27,3 +27,14 @@ A wrapper around \code{\link{get_cox_estimates}} (inference),
 \code{\link{get_cox_stats}} (goodness of fit) and
 \code{\link{get_cox_assumptions}} (assumptions).
 }
+\references{
+\itemize{
+\item Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
+the Cox Model. (Springer Verlag, 2000).
+\item Grambsch, P. M. & Therneau, T. M. Proportional Hazards Tests and
+Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
+\item Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+models: Issues in developing models, evaluating assumptions and adequacy,
+and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+}
+}
