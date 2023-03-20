@@ -1,3 +1,5 @@
+[![R](https://github.com/PiotrTymoszuk/coxExtensions/actions/workflows/r.yml/badge.svg)](https://github.com/PiotrTymoszuk/coxExtensions/actions/workflows/r.yml)
+
 # coxExtensions
 Extended Inference and Goodness of Fit for Cox Models
 
