@@ -25,7 +25,7 @@ default. See: \code{\link[survival]{predict.coxph}} for details.}
 \item{type.residuals}{type of the residuals, 'martingale' by default.
 See: \code{\link[survival]{residuals.coxph}} for details.}
 
-\item{rsq_type}{type of R-quared statistic, see: \code{\link[survMisc]{rsq}}.}
+\item{rsq_type}{type of R-squared statistic, see: \code{\link[survMisc]{rsq}}.}
 
 \item{...}{extra arguments passed to \code{\link{get_cox_qc}}.}
 }
@@ -37,8 +37,9 @@ Calculates fit statistics for a CoxPH model: AIC (Akaike
 information criterion), BIC (Bayesian information criterion), raw_rsq
 (unadjusted R-squared, cod, mer or mev/default, see:
 \code{\link[survMisc]{rsq}}), MAE (mean absolute error), MSE
-(mean squared error), RMSE (root MSE) and C-index with 95\% confidence
-intervals (normality assumption).
+(mean squared error), RMSE (root MSE),  concordance (C) index
+with 95\% confidence intervals (normality assumption) and the
+integrated Brier score (IBS, see: \code{\link[pec]{pec}}).
 }
 \references{
 \itemize{

@@ -28,7 +28,7 @@
 
     stopifnot(is.function(trans_function))
 
-    if(coxExtensions::is_coxex(cox_model)) {
+    if(is_coxex(cox_model)) {
 
       cox_model <- cox_model$model
 
@@ -143,9 +143,9 @@
 
     ## entry control
 
-    if(coxExtensions::is_coxex(cox_model)) {
+    if(is_coxex(cox_model)) {
 
-      data <- coxExtensions::model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame.coxex(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
@@ -182,10 +182,11 @@
 #' information criterion), BIC (Bayesian information criterion), raw_rsq
 #' (unadjusted R-squared, cod, mer or mev/default, see:
 #' \code{\link[survMisc]{rsq}}), MAE (mean absolute error), MSE
-#' (mean squared error), RMSE (root MSE) and C-index with 95% confidence
-#' intervals (normality assumption).
+#' (mean squared error), RMSE (root MSE),  concordance (C) index
+#' with 95% confidence intervals (normality assumption) and the
+#' integrated Brier score (IBS, see: \code{\link[pec]{pec}}).
 #' @return a data frame with the statistic values.
-#' @param rsq_type type of R-quared statistic, see: \code{\link[survMisc]{rsq}}.
+#' @param rsq_type type of R-squared statistic, see: \code{\link[survMisc]{rsq}}.
 #' @param ... extra arguments passed to \code{\link{get_cox_qc}}.
 #' @inheritParams get_cox_qc
 #' @references
@@ -203,11 +204,11 @@
                             type.residuals = 'martingale',
                             rsq_type = c('mev', 'mer', 'cod'), ...) {
 
-    ## entry control
+    ## entry control ----
 
-    if(coxExtensions::is_coxex(cox_model)) {
+    if(is_coxex(cox_model)) {
 
-      data <- coxExtensions::model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame.coxex(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
@@ -221,11 +222,11 @@
 
     rsq_type <- match.arg(rsq_type[1], c('mev', 'mer', 'cod'))
 
-    ## R-squared
+    ## R-squared ----
 
     rsq_tbl <- survMisc::rsq(cox_model)
 
-    ## concordance
+    ## concordance ----
 
     c_index <- unname(summary(cox_model)$concordance)
 
@@ -235,21 +236,27 @@
                             lower_ci = c_index[1] + qnorm(0.025) * se,
                             upper_ci = c_index[1] + qnorm(0.975) * se)
 
-    ## n numbers
+    ## integrated Brier score ------
+
+    ibs_tbl <- suppressMessages(get_cox_pec(cox_model,
+                                            data = data,
+                                            return_pec = FALSE))
+
+    ## n numbers -----
 
     surv <- unclass(model.frame(cox_model)[, 1])
 
     n_num <- c('total' = nrow(surv),
                'events' = sum(surv[, 'status']))
 
-    ## errors
+    ## errors ------
 
-    resid_tbl <- coxExtensions::get_cox_qc(cox_model = cox_model,
-                                           type.predict = type.predict,
-                                           type.residuals = type.residuals,
-                                           data = data, ...)
+    resid_tbl <- get_cox_qc(cox_model = cox_model,
+                            type.predict = type.predict,
+                            type.residuals = type.residuals,
+                            data = data, ...)
 
-    ## output
+    ## output -------
 
     res_tbl <- tibble::tibble(n_complete = n_num['total'],
                               n_events = n_num['events'],
@@ -260,7 +267,64 @@
                               mse = mean(resid_tbl$.resid^2),
                               rmse = sqrt(mean(resid_tbl$.resid^2)))
 
-    tibble::as_tibble(cbind(res_tbl, c_tbl))
+    tibble::as_tibble(cbind(res_tbl, c_tbl, ibs_tbl))
+
+  }
+
+# Integrated Brier scores -------
+
+#' Calculate prediction error curves and integrated Brier score (IBS).
+#'
+#' @description Computes prediction error curves and
+#' integrated Brier score (IBS)
+#' for a Cox model using \code{\link[pec]{pec}} and \code{\link[pec]{crps}}.
+#' @return a numeric vactor with IBS values or a `pec` class object.
+#' @param cox_model a Cox model of the `coxph` or `coxex` class.
+#' @param data the data frame used for the model construction. Ignored,
+#' if coxex object provided.
+#' @param return_pec logical, should a `pec` object be returned?
+#' @param ... extra arguments passed to \code{\link[pec]{pec}}.
+#' @import prodlim
+#' @export
+
+  get_cox_pec <- function(cox_model,
+                          data = NULL,
+                          return_pec = FALSE, ...) {
+
+    ## entry control ----
+
+    if(is_coxex(cox_model)) {
+
+      data <- model.frame.coxex(cox_model, type = 'data')
+
+      cox_model <- cox_model$model
+
+    }
+
+    if(!any(class(cox_model) == 'coxph')) {
+
+      stop('Please provide a valid coxph class model.', call. = FALSE)
+
+    }
+
+    ## generation of the pec object ------
+
+    ## KM formula
+
+    km_formula <- paste(as.character(formula(cox_model))[2], '~ 1')
+
+    km_formula <- as.formula(km_formula)
+
+    pec_obj <- pec::pec(object = cox_model,
+                        formula = km_formula,
+                        data = data)
+
+    if(return_pec) return(pec_obj)
+
+    crps <- pec::crps(pec_obj)
+
+    tibble::tibble(ibs_reference = crps[1, 1],
+                   ibs_model = crps[2, 1])
 
   }
 
@@ -287,15 +351,15 @@
                                   type.residuals = 'martingale',
                                   data = NULL, ...) {
 
-    ## suppression of R-CMD-check notes concerining global variables
+    ## suppression of R-CMD-check notes concerning global variables
 
     chisq <- p <- NULL
 
     ## entry control
 
-    if(coxExtensions::is_coxex(cox_model)) {
+    if(is_coxex(cox_model)) {
 
-      data <- coxExtensions::model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame.coxex(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
@@ -309,10 +373,10 @@
 
     ## normality
 
-    resid_tbl <- coxExtensions::get_cox_qc(cox_model = cox_model,
-                                           type.predict = type.predict,
-                                           type.residuals = type.residuals,
-                                           data = data, ...)
+    resid_tbl <- get_cox_qc(cox_model = cox_model,
+                            type.predict = type.predict,
+                            type.residuals = type.residuals,
+                            data = data, ...)
 
     tst_results <- shapiro.test(resid_tbl$.resid)
 
@@ -415,9 +479,9 @@
 
     ## entry control
 
-    if(coxExtensions::is_coxex(cox_model)) {
+    if(is_coxex(cox_model)) {
 
-      data <- coxExtensions::model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame.coxex(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 

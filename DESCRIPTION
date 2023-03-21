@@ -1,7 +1,7 @@
 Package: coxExtensions
 Type: Package
 Title: Extended Inference and Goodness of Fit for Cox Models
-Version: 0.2.0
+Version: 0.2.1
 Maintainer: Piotr Tymoszuk <piotr.s.tymoszuk@gmail.com>
 Description: Extends the toolbox for Cox proportional hazard models 
     (survival, SurvMisc) with inference statistic, goodness of fit,  
@@ -17,7 +17,9 @@ Imports:
     ggplot2,
     ggrepel,
     grDevices,
+    pec,
     plyr,
+    prodlim,
     purrr,
     rlang,
     stringi,
