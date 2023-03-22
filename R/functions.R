@@ -421,6 +421,7 @@
 #' survival estimate calculated by \code{\link[survminer]{surv_fit}}.
 #' The 'fitted' survival obs are derived from the Cox proportional hazard models
 #' of survival as a function of the linear predictor score quantile intervals.
+#'
 #' @return an object of class 'calibrator', whose statistic and graphical
 #' summary can be accessed by S3 'summary' and 'plot' methods.
 #' The object consists of the following elements:
@@ -448,12 +449,18 @@
 #'
 #' @param cox_model a CoxpPH model or a coxex object.
 #' @param fit a CoxpPH model or a coxex object.
-#' @param n a single numeric defining the number of quantile intervals.
+#' @param n a single numeric defining the number of quantile intervals of
+#' the Cox model's linear predictor score.
 #' @param labels an optional user-provided vector of labels for
 #' the quantile intervals.
 #' @param right logical, indicating if the quantile intervals should be closed
 #' on the right (and open on the left) or vice versa.
+#' @param use_unique logical, should unique values of the Cox model's linear
+#' predictor scores be used instead of quantile strata? This option is
+#' non-canonical and experimental, may be utilized to check an association
+#' between an ordinal variable and survival.
 #' @param ... additional arguments, currently none.
+#'
 #' @references
 #' * D’Agostino, R. B. & Nam, B. H. Evaluation of the Performance of
 #' Survival Analysis Models: Discrimination and Calibration Measures.
@@ -463,21 +470,23 @@
 #' Stata J. 14, 738–755 (2014).
 #' * Crowson, C. S. et al. Assessing calibration of prognostic risk
 #' scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+#'
 #' @md
 #' @export
 
   get_cox_calibration <- function(cox_model,
                                   n = 3,
                                   labels = NULL,
-                                  right = FALSE) {
+                                  right = FALSE,
+                                  use_unique = FALSE, ...) {
 
-    ## to suppress the R-CMD-check note caused by variables in NSE
+    ## to suppress the R-CMD-check note caused by variables in NSE ------
 
     strata <- n.event <- .data <- surv <- prob <- NULL
     km_events <- cox_events <- km_prob <- cox_prob <- NULL
     sq_resid <- rr <- x2_dn <- label <- NULL
 
-    ## entry control
+    ## entry control --------
 
     if(is_coxex(cox_model)) {
 
@@ -493,27 +502,66 @@
 
     }
 
-    ## linear predictor score and stratification
+    stopifnot(is.numeric(n))
+    stopifnot(is.logical(right))
+    stopifnot(is.logical(use_unique))
+
+    n <- as.integer(n)
+
+    ## linear predictor score and stratification -------
 
     lp_score <- predict(cox_model, type = 'lp')
 
-    score_tbl <- cut_quantiles(x = lp_score,
-                               n = n,
-                               labels = labels,
-                               right = right)
+    if(!use_unique) {
 
-    if(is.null(labels)) {
+      score_tbl <- cut_quantiles(x = lp_score,
+                                 n = n,
+                                 labels = labels,
+                                 right = right)
 
-      score_tbl <- rlang::set_names(score_tbl,
-                                    c('lp_score',
-                                      'strata'))
+      if(is.null(labels)) {
+
+        score_tbl <- rlang::set_names(score_tbl,
+                                      c('lp_score',
+                                        'strata'))
+
+      } else {
+
+        score_tbl <- rlang::set_names(score_tbl,
+                                      c('lp_score',
+                                        'strata',
+                                        'label'))
+
+      }
 
     } else {
 
-      score_tbl <- rlang::set_names(score_tbl,
-                                    c('lp_score',
-                                      'strata',
-                                      'label'))
+      score_tbl <-
+        tibble::tibble(lp_score = lp_score,
+                       strata = factor(lp_score))
+
+      if(!is.null(labels)) {
+
+        if(length(labels) != length(levels(score_tbl[['strata']]))) {
+
+          stop(paste('The length of the label vector must correspond',
+                     'to the number of unique values of the linear',
+                     'predictor score.'),
+               call. = FALSE)
+
+        }
+
+        lab_fun <-function(x) {
+
+          rlang::set_names(labels, levels(score_tbl[['strata']]))[x]
+
+        }
+
+        score_tbl <-
+          dplyr::mutate(score_tbl,
+                        label = forcats::fct_relabel(strata, lab_fun))
+
+      }
 
     }
 
@@ -522,7 +570,7 @@
 
     surv_object <- model.frame(cox_model)[[1]]
 
-    ## KM estimates
+    ## KM estimates ---------
 
     survfit_obj <- survminer::surv_fit(formula = surv_object ~ strata,
                                        data = score_tbl)
@@ -542,7 +590,7 @@
                                                          !!!strata_reco),
                             strata = factor(strata, levels(score_tbl$strata)))
 
-    ## Cox estimates
+    ## Cox estimates ---------
 
     cox_model_strata <- survival::coxph(surv_object ~ strata_number,
                                        data = score_tbl)
@@ -556,7 +604,7 @@
                     prob = exp(-n.event),
                     time = unclass(model.frame(cox_model_strata)[[1]])[, 1])
 
-    ## mean KM survival and Cox risk estimates per strata
+    ## mean KM survival and Cox risk estimates per strata ----------
 
     mean_km_est <- dplyr::group_by(km_est, .data[['strata']])
     mean_cox_est <- dplyr::group_by(cox_est, .data[['strata']])

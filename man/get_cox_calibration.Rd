@@ -5,14 +5,22 @@
 \alias{calibrate.coxex}
 \title{Calculate D'Agostino - Nam calibration stats.}
 \usage{
-get_cox_calibration(cox_model, n = 3, labels = NULL, right = FALSE)
+get_cox_calibration(
+  cox_model,
+  n = 3,
+  labels = NULL,
+  right = FALSE,
+  use_unique = FALSE,
+  ...
+)
 
-\method{calibrate}{coxex}(fit, n = 3, labels = NULL, right = FALSE, ...)
+\method{calibrate}{coxex}(fit, n = 3, labels = NULL, right = FALSE, use_unique = FALSE, ...)
 }
 \arguments{
 \item{cox_model}{a CoxpPH model or a coxex object.}
 
-\item{n}{a single numeric defining the number of quantile intervals.}
+\item{n}{a single numeric defining the number of quantile intervals of
+the Cox model's linear predictor score.}
 
 \item{labels}{an optional user-provided vector of labels for
 the quantile intervals.}
@@ -20,9 +28,14 @@ the quantile intervals.}
 \item{right}{logical, indicating if the quantile intervals should be closed
 on the right (and open on the left) or vice versa.}
 
-\item{fit}{a CoxpPH model or a coxex object.}
+\item{use_unique}{logical, should unique values of the Cox model's linear
+predictor scores be used instead of quantile strata? This option is
+non-canonical and experimental, may be utilized to check an association
+between an ordinal variable and survival.}
 
 \item{...}{additional arguments, currently none.}
+
+\item{fit}{a CoxpPH model or a coxex object.}
 }
 \value{
 an object of class 'calibrator', whose statistic and graphical

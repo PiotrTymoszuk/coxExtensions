@@ -272,14 +272,16 @@
   calibrate.coxex <- function(fit,
                               n = 3,
                               labels = NULL,
-                              right = FALSE, ...) {
+                              right = FALSE,
+                              use_unique = FALSE, ...) {
 
     stopifnot(is_coxex(fit))
 
     get_cox_calibration(cox_model = fit,
                         n = n,
                         labels = labels,
-                        right = right)
+                        right = right,
+                        use_unique = use_unique)
 
   }
 

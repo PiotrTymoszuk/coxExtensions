@@ -3,19 +3,20 @@
   library(survival)
   library(coxExtensions)
 
+  set.seed(1234)
+
   survs <- sample(1:102, 500, replace = TRUE)
 
   events <- as.double(sample(0:1, 500, replace = TRUE))
 
-  test_vars <- rnorm(500)
-
   test_data <- tibble::tibble(surv_time = sort(survs),
                               event_var = events,
-                              var1 = test_vars,
+                              var1 = rnorm(500),
                               var2 = rnorm(500, 15, sd = 5),
-                              var3 = c(rep('A', 150),
+                              var3 = factor(c(rep('A', 150),
                                        rep('B', 200),
-                                       rep('C', 150)))
+                                       rep('C', 150)),
+                                       c('C', 'B', 'A')))
 
   test_uni <- coxph(Surv(surv_time, event_var) ~ var1,
                     data = test_data,
@@ -28,6 +29,11 @@
   test_obj <- coxex(test_model, test_data)
 
   test_uni <- coxex(test_uni, data = test_data)
+
+  test_strata <- coxex(coxph(Surv(surv_time, event_var) ~ var3,
+                             data = test_data,
+                             x = TRUE),
+                       data = test_data)
 
   summary(test_uni)
 
@@ -73,6 +79,13 @@
 
   test_cal <- calibrate(test_obj, n = 4, labels = paste0('Q', 1:4))
   test_uni_cal <- get_cox_calibration(test_uni, n = 3)
+
+  test_cal_strata <- calibrate(test_strata,
+                               use_unique = TRUE,
+                               labels = levels(test_data$var3))
+
+  plot(test_cal_strata)
+
 
   plot(test_cal, show_cox = FALSE)
   plot(test_uni_cal)
