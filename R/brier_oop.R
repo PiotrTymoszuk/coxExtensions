@@ -179,7 +179,7 @@
 
     }
 
-    if(any(is.na(x$test))) {
+    if(all(is.na(x$test))) {
 
       plot_variables <- plot_variables[plot_variables != 'test']
 
