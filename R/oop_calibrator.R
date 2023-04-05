@@ -2,7 +2,7 @@
 
 # Constructor ------
 
-#' Builds a calibration object.
+#' Build a calibration object.
 #'
 #' @description Generates a calibration object,
 #' used internally by the \code{\link{get_cox_calibration}} function.

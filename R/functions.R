@@ -271,25 +271,43 @@
 
   }
 
-# Integrated Brier scores -------
+# Integrated Brier scores and prediction error curves -------
 
 #' Calculate prediction error curves and integrated Brier score (IBS).
 #'
 #' @description Computes prediction error curves and
 #' integrated Brier score (IBS)
 #' for a Cox model using \code{\link[pec]{pec}} and \code{\link[pec]{crps}}.
-#' @return a numeric vactor with IBS values or a `pec` class object.
+#' @return a numeric vector with IBS values, a \code{\link[pec]{pec}} class
+#' or a \code{\link{brier}} class object.
 #' @param cox_model a Cox model of the `coxph` or `coxex` class.
 #' @param data the data frame used for the model construction. Ignored,
 #' if coxex object provided.
-#' @param return_pec logical, should a `pec` object be returned?
+#' @param type type of object to be returned: 'ibs' returns
+#' the Integrated Brier Score (IBS), 'pec' returns a \code{\link[pec]{pec}}
+#' object and 'brier' returns a data frame with Brier scores for unique time
+#' points of the \code{\link{brier}} class.
+#' @param splitMethod validation method used for calculation of the Bier scores
+#' as specified by the respective \code{\link[pec]{pec}} argument.
+#' One of 'none' (no validation), 'cvK' (K-fold cross-validation, e.g. 'cv10'),
+#' 'boot' (bootstrap), 'BootCv' (bootstrap cross-validation),
+#' 'Boot632', 'Boot632plus', 'loocv' or 'NoInf', see the upstream
+#' function for details.
 #' @param ... extra arguments passed to \code{\link[pec]{pec}}.
+#'
+#' @references
+#' * Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+#' comparison of prognostic classification schemes for survival data.
+#' Stat. Med. 18, 2529–2545 (1999).
+#'
+#' @md
 #' @import prodlim
 #' @export
 
   get_cox_pec <- function(cox_model,
                           data = NULL,
-                          return_pec = FALSE, ...) {
+                          type = c('ibs', 'pec', 'brier'),
+                          splitMethod = 'none', ...) {
 
     ## entry control ----
 
@@ -307,6 +325,8 @@
 
     }
 
+    type <- match.arg(type[1], c('ibs', 'pec', 'brier'))
+
     ## generation of the pec object ------
 
     ## KM formula
@@ -317,14 +337,47 @@
 
     pec_obj <- pec::pec(object = cox_model,
                         formula = km_formula,
-                        data = data)
+                        data = data,
+                        splitMethod = splitMethod, ...)
 
-    if(return_pec) return(pec_obj)
+    if(type == 'pec') return(pec_obj)
 
-    crps <- pec::crps(pec_obj)
+    if(type == 'ibs') {
 
-    tibble::tibble(ibs_reference = crps[1, 1],
-                   ibs_model = crps[2, 1])
+      crps <- pec::crps(pec_obj)
+
+      return(tibble::tibble(ibs_reference = crps[1, 1],
+                            ibs_model = crps[2, 1]))
+
+    }
+
+    times <- pec_obj$time
+    reference <- pec_obj$AppErr[[1]]
+    training <- pec_obj$AppErr[[2]]
+
+    if(stringi::stri_detect(splitMethod, regex = '^cv')) {
+
+      test <- pec_obj$crossvalErr[[2]]
+
+    } else {
+
+      test <-
+        switch(splitMethod,
+               none = NULL,
+               noPlan = NULL,
+               boot = pec_obj$BootCvErr[[2]],
+               BootCv = pec_obj$BootCvErr[[2]],
+               Boot632 = pec_obj$Boot632Err[[2]],
+               Boot632plus = pec_obj$Boot632plusErr[[2]],
+               loocv = pec_obj$loocvErr[[2]],
+               NoInf = NULL)
+
+    }
+
+    return(brier(times = times,
+                 reference = reference,
+                 training = training,
+                 test = test))
 
   }
 
@@ -684,6 +737,115 @@
     }
 
     eval(rlang::call2('calibrator', !!!results))
+
+  }
+
+# Validation statistics --------
+
+#' Validation statistics for 'coxph' and 'coxex' models.
+#'
+#' @description Provides an access to validation stats obtained e.g.
+#' by cross-validation or bootstraping via \code{\link[rms]{validate}}.
+#' @details See: \code{\link[rms]{validate.cph}}.
+#' @return a data frame with the following variables:
+#' * `dataset`: dataset used for computation of the stats
+#' * `Dxy`: Somers' DXY rank correlation
+#' * `R2`: Nagelkerke R-squared
+#' * `Slope`: slope shrinkage
+#' * `D`: discrimination index D
+#' * `U`: unreliability index
+#' * `Q`: the overall quality index
+#' * `g`: g-index on the log relative hazard
+#' * `c_index`: Harrell's concordance index.
+#'
+#' @param cox_model a 'coxph' or 'coxex' model.
+#' @param data modeling data, ignored if a 'coxex' model provided.
+#' @param method resampling method may be "crossvalidation",
+#' "boot" (the default), ".632", or "randomization".
+#' @param B number of repetitions.
+#' @param bw TRUE to do fast step-down using the \code{\link[rms]{fastbw}}
+#' function, for both the overall model and for each repetition.
+#' \code{\link[rms]{fastbw}} keeps parameters together that represent
+#' the same factor.
+#' @param rule Applies if bw = TRUE. "aic" to use Akaike's information
+#' criterion as a stopping rule (i.e., a factor is deleted if the chi-squared
+#' falls below twice its degrees of freedom), or "p" to use p-values.
+#' @param type "residual" or "individual"
+#' stopping rule is for individual factors or for the residual chi-squared
+#' for all variables deleted
+#' @param sls significance level for a factor to be kept in a model, or for
+#' judging the residual chi-squared
+#' @param aics 	cutoff on AIC when rule="aic"
+#' @param force see \code{\link[rms]{fastbw}}
+#' @param estimates see \code{\link[rms]{print.fastbw}}
+#' @param pr TRUE to print results of each repetition
+#' @param ... extra arguments passed to \code{\link[rms]{validate.cph}}
+#'
+#' @references
+#' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+#' models: Issues in developing models, evaluating assumptions and adequacy,
+#' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#'
+#' @md
+#' @export
+
+  get_cox_validation <- function(cox_model,
+                                 data = NULL,
+                                 method = 'boot',
+                                 B = 40,
+                                 bw = FALSE,
+                                 rule = 'aic',
+                                 type = 'residual',
+                                 sls = 0.05,
+                                 aics = 0,
+                                 force = NULL,
+                                 estimates = TRUE,
+                                 pr = FALSE, ...) {
+
+    ## entry control ------
+
+    if(is_coxex(cox_model)) {
+
+      data <- model.frame.coxex(cox_model, type = 'data')
+
+      cox_model <- cox_model$model
+
+    }
+
+    if(!any(class(cox_model) == 'coxph')) {
+
+      stop('Please provide a valid coxph class model.', call. = FALSE)
+
+    }
+
+    dataset <- NULL
+    Dxy <- NULL
+
+    ## fitting a cph model required for validation --------
+
+    cph_model <- rms::cph(formula = formula(cox_model),
+                          data = data,
+                          x = TRUE,
+                          y = TRUE)
+
+    val_results <- rms::validate(cph_model)
+
+    val_results <- t(unclass(as.matrix(val_results)))
+
+    val_results <- as.data.frame(val_results)
+
+    val_results <- tibble::rownames_to_column(val_results, 'dataset')
+
+    val_results <- dplyr::filter(val_results,
+                                 dataset %in% c('index.orig',
+                                                'training',
+                                                'test',
+                                                'index.corrected'))
+
+    val_results <- dplyr::mutate(val_results,
+                                 c_index = (Dxy + 1)/2)
+
+    tibble::as_tibble(val_results)
 
   }
 

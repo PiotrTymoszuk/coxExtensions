@@ -95,7 +95,25 @@
 
   plot(test_obj, 'residuals')
 
-  get_cox_pec(cox_model = test_obj)
+  test_pec <- get_cox_pec(cox_model = test_obj,
+                          type = 'brier',
+                          splitMethod = 'cv10')
+
+  test_brier <- surv_brier(test_obj,
+                           splitMethod = 'BootCv')
+
+  dplyr::filter(test_brier, time < 50)
+
+  plot(dplyr::filter(test_brier, time < 50),
+       one_plot = TRUE,
+       show_reference = FALSE)
+
+  test_validation <- validate(fit = test_obj,
+                              method = 'crossvalidation')
+
+
+
+
 
 
 

@@ -226,7 +226,7 @@
 #' Summary for the coxex class.
 #'
 #' @description Generates a summary for a coxex model. This can be inference
-#' (type = 'inference'), goodness of fit (type = 'fit') or
+#' (type = 'inference'), fit statistics in the training data (type = 'fit') or
 #' model assumptions (type = 'assumptions').
 #' @details A wrapper around \code{\link{get_cox_estimates}} (inference),
 #' \code{\link{get_cox_stats}} (goodness of fit) and
@@ -236,6 +236,7 @@
 #' @param type statistic type, 'inference' by default.
 #' @param ... extra arguments passed to \code{\link{get_cox_estimates}},
 #' \code{\link{get_cox_stats}} or \code{\link{get_cox_assumptions}}.
+#'
 #' @references
 #' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
 #' the Cox Model. (Springer Verlag, 2000).
@@ -244,6 +245,10 @@
 #' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
 #' models: Issues in developing models, evaluating assumptions and adequacy,
 #' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#' * Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+#' comparison of prognostic classification schemes for survival data.
+#' Stat. Med. 18, 2529–2545 (1999).
+#'
 #' @md
 #' @export summary.coxex
 #' @export
@@ -259,6 +264,62 @@
            inference = get_cox_estimates(object, ...),
            fit = get_cox_stats(object, ...),
            assumptions = get_cox_assumptions(object, ...))
+
+  }
+
+# Brier scores ------
+
+#' Calculate Brier scores for the survival fit.
+#'
+#' @description The Brier score for survival models is computed as a squared
+#' distance between the predicted survival probability and and the actual
+#' 0/1-coded survival for each unique time point of the dataset.
+#' @details See, \code{\link[pec]{pec}} for details.
+#' The `surv_brier` is a S3 generic function.
+#' @return an object of the \code{\link{brier}} class with the `plot` method
+#' and multiple methods shared with traditional data frames.
+#' @param fit a survival model.
+#' @param data the data frame used for the model construction.
+#' @param splitMethod validation method used for calculation of the Bier scores
+#' as specified by the respective \code{\link[pec]{pec}} argument.
+#' One of 'none' (no validation), 'cvK' (K-fold cross-validation, e.g. 'cv10'),
+#' 'boot' (bootstrap), 'BootCv' (bootstrap cross-validation),
+#' 'Boot632', 'Boot632plus', 'loocv' or 'NoInf', see the upstream
+#' function for details.
+#' @param ... extra arguments passed to \code{\link[pec]{pec}}.
+#'
+#' @references
+#' * Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+#' comparison of prognostic classification schemes for survival data.
+#' Stat. Med. 18, 2529–2545 (1999).
+#'
+#' @md
+#' @export surv_brier.coxex
+#' @export
+
+  surv_brier.coxex <- function(fit,
+                               splitMethod = 'none', ...) {
+
+    stopifnot(is_coxex(fit))
+
+    get_cox_pec(cox_model = fit,
+                type = 'brier',
+                splitMethod = splitMethod, ...)
+
+  }
+
+#' @rdname surv_brier.coxex
+#' @export surv_brier.coxph
+#' @export
+
+  surv_brier.coxph <- function(fit,
+                               data,
+                               splitMethod = 'none', ...) {
+
+    get_cox_pec(cox_model = fit,
+                data = data,
+                type = 'brier',
+                splitMethod = splitMethod, ...)
 
   }
 
@@ -282,6 +343,84 @@
                         labels = labels,
                         right = right,
                         use_unique = use_unique)
+
+  }
+
+# Validation --------
+
+#' Validate a 'coxex' model.
+#'
+#' @description Provides an access to validation stats obtained e.g.
+#' by cross-validation or bootstraping via \code{\link[rms]{validate}}.
+#' @details See: \code{\link[rms]{validate.cph}}.
+#' @return a data frame with the following variables:
+#' * `dataset`: dataset used for computation of the stats
+#' * `Dxy`: Somers' DXY rank correlation
+#' * `R2`: Nagelkerke R-squared
+#' * `Slope`: slope shrinkage
+#' * `D`: discrimination index D
+#' * `U`: unreliability index
+#' * `Q`: the overall quality index
+#' * `g`: g-index on the log relative hazard
+#' * `c_index`: Harrell's concordance index.
+#'
+#' @param fit a 'coxex' model.
+#' @param method resampling method may be "crossvalidation",
+#' "boot" (the default), ".632", or "randomization".
+#' @param B number of repetitions.
+#' @param bw TRUE to do fast step-down using the \code{\link[rms]{fastbw}}
+#' function, for both the overall model and for each repetition.
+#' \code{\link[rms]{fastbw}} keeps parameters together that represent
+#' the same factor.
+#' @param rule Applies if bw = TRUE. "aic" to use Akaike's information
+#' criterion as a stopping rule (i.e., a factor is deleted if the chi-squared
+#' falls below twice its degrees of freedom), or "p" to use p-values.
+#' @param type "residual" or "individual"
+#' stopping rule is for individual factors or for the residual chi-squared
+#' for all variables deleted
+#' @param sls significance level for a factor to be kept in a model, or for
+#' judging the residual chi-squared
+#' @param aics 	cutoff on AIC when rule="aic"
+#' @param force see \code{\link[rms]{fastbw}}
+#' @param estimates see \code{\link[rms]{print.fastbw}}
+#' @param pr TRUE to print results of each repetition
+#' @param ... extra arguments passed to \code{\link[rms]{validate.cph}}
+#'
+#' @references
+#' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
+#' models: Issues in developing models, evaluating assumptions and adequacy,
+#' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#'
+#' @md
+#' @importFrom rms validate
+#' @export validate.coxex
+#' @export
+
+  validate.coxex <- function(fit,
+                             method = 'boot',
+                             B = 40,
+                             bw = FALSE,
+                             rule = 'aic',
+                             type = 'residual',
+                             sls = 0.05,
+                             aics = 0,
+                             force = NULL,
+                             estimates = TRUE,
+                             pr = FALSE, ...) {
+
+    stopifnot(is_coxex(fit))
+
+    get_cox_validation(cox_model = fit,
+                       method = method,
+                       B = B,
+                       bw = bw,
+                       rule = rule,
+                       type = type,
+                       sls = sls,
+                       aics = aics,
+                       force = force,
+                       estimates = estimates,
+                       pr = pr, ...)
 
   }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/oop_calibrator.R
 \name{calibrator}
 \alias{calibrator}
-\title{Builds a calibration object.}
+\title{Build a calibration object.}
 \usage{
 calibrator(
   lp_scores,

@@ -19,7 +19,7 @@ a data frame with the stats specified by the type argument.
 }
 \description{
 Generates a summary for a coxex model. This can be inference
-(type = 'inference'), goodness of fit (type = 'fit') or
+(type = 'inference'), fit statistics in the training data (type = 'fit') or
 model assumptions (type = 'assumptions').
 }
 \details{
@@ -36,5 +36,8 @@ Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
 \item Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
 models: Issues in developing models, evaluating assumptions and adequacy,
 and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+\item Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+comparison of prognostic classification schemes for survival data.
+Stat. Med. 18, 2529–2545 (1999).
 }
 }

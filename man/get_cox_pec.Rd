@@ -4,7 +4,13 @@
 \alias{get_cox_pec}
 \title{Calculate prediction error curves and integrated Brier score (IBS).}
 \usage{
-get_cox_pec(cox_model, data = NULL, return_pec = FALSE, ...)
+get_cox_pec(
+  cox_model,
+  data = NULL,
+  type = c("ibs", "pec", "brier"),
+  splitMethod = "none",
+  ...
+)
 }
 \arguments{
 \item{cox_model}{a Cox model of the \code{coxph} or \code{coxex} class.}
@@ -12,15 +18,33 @@ get_cox_pec(cox_model, data = NULL, return_pec = FALSE, ...)
 \item{data}{the data frame used for the model construction. Ignored,
 if coxex object provided.}
 
-\item{return_pec}{logical, should a \code{pec} object be returned?}
+\item{type}{type of object to be returned: 'ibs' returns
+the Integrated Brier Score (IBS), 'pec' returns a \code{\link[pec]{pec}}
+object and 'brier' returns a data frame with Brier scores for unique time
+points of the \code{\link{brier}} class.}
+
+\item{splitMethod}{validation method used for calculation of the Bier scores
+as specified by the respective \code{\link[pec]{pec}} argument.
+One of 'none' (no validation), 'cvK' (K-fold cross-validation, e.g. 'cv10'),
+'boot' (bootstrap), 'BootCv' (bootstrap cross-validation),
+'Boot632', 'Boot632plus', 'loocv' or 'NoInf', see the upstream
+function for details.}
 
 \item{...}{extra arguments passed to \code{\link[pec]{pec}}.}
 }
 \value{
-a numeric vactor with IBS values or a \code{pec} class object.
+a numeric vector with IBS values, a \code{\link[pec]{pec}} class
+or a \code{\link{brier}} class object.
 }
 \description{
 Computes prediction error curves and
 integrated Brier score (IBS)
 for a Cox model using \code{\link[pec]{pec}} and \code{\link[pec]{crps}}.
+}
+\references{
+\itemize{
+\item Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+comparison of prognostic classification schemes for survival data.
+Stat. Med. 18, 2529–2545 (1999).
+}
 }
