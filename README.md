@@ -7,7 +7,7 @@ Extended Inference and Goodness of Fit for Cox Models
 
 ## Summary
 
-Extends the toolbox for Cox proportional hazard models (survival, SurvMisc) with inference statistic, goodness of fit, diagnostic functions and clibration tests compatible with the tidyverse format.
+Extends the toolbox for Cox proportional hazard models (survival, SurvMisc) with inference statistic, goodness of fit, diagnostic functions and calibration tests compatible with the tidyverse format.
 
 ## Installation
 
