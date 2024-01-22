@@ -1,5 +1,9 @@
 # S3 OOP for the coxex class.
 
+#' @include imports.R
+
+  NULL
+
 # Constructor ------
 
 #' Create a coxex object model.
@@ -21,7 +25,7 @@
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('A valid coxph class model required.', call. = FALSE)
 
@@ -29,10 +33,10 @@
 
     ## construction
 
-    data_call <- rlang::enexpr(data)
+    data_call <- enexpr(data)
 
     structure(list(model = cox_model,
-                   data = rlang::quo(!!data_call)),
+                   data = quo(!!data_call)),
               class = 'coxex')
 
   }
@@ -60,11 +64,7 @@
 #' @return a logical value.
 #' @export
 
-  is_coxex <- function(x) {
-
-    all(class(x) == 'coxex')
-
-  }
+  is_coxex <- function(x) inherits(x, 'coxex')
 
 # Coercion -----
 #'
@@ -111,7 +111,6 @@
 #' @param ... extra arguments, currently none.
 #' @return a data frame with the number of total complete observations and
 #' events.
-#' @import stats
 #' @export
 
   nobs.coxex <- function(object, ...) {
@@ -122,8 +121,8 @@
 
     status <- surv[, 'status']
 
-    tibble::tibble(observations = c('total', 'events'),
-                   n = c(nrow(surv), sum(status)))
+    tibble(observations = c('total', 'events'),
+           n = c(nrow(surv), sum(status)))
 
   }
 
@@ -148,7 +147,7 @@
 
     switch(type,
            model_frame = model.frame(formula$model),
-           data = rlang::eval_tidy(formula$data),
+           data = eval_tidy(formula$data),
            surv = model.frame(formula$model)[, 1])
 
   }
@@ -195,7 +194,6 @@
   }
 
 #' @rdname residuals.coxex
-#' @import stats
 #' @export resid.coxex
 #' @export
 
@@ -326,7 +324,6 @@
 # Calibration -------
 
 #' @rdname get_cox_calibration
-#' @importFrom rms calibrate
 #' @export calibrate.coxex
 #' @export
 
@@ -392,7 +389,6 @@
 #' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
 #'
 #' @md
-#' @importFrom rms validate
 #' @export validate.coxex
 #' @export
 
@@ -453,11 +449,11 @@
 
     switch(type,
            residuals = get_cox_qc_plots(cox_model = x,
-                                                       cust_theme = cust_theme,
-                                                       ...),
+                                        cust_theme = cust_theme,
+                                        ...),
            fit = plot_cox_fit(cox_model = x,
-                                             cust_theme = cust_theme,
-                                             ...))
+                              cust_theme = cust_theme,
+                              ...))
 
   }
 

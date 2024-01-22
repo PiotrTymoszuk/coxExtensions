@@ -1,5 +1,9 @@
 # Functional tools for the CoxPH models.
 
+#' @include imports.R
+
+  NULL
+
 # Inference ----
 
 #' Get inference statistic for a CoxPH model.
@@ -34,7 +38,7 @@
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -52,45 +56,48 @@
 
     ci_table <- as.data.frame(confint(cox_model))
 
-    ci_table <- rlang::set_names(ci_table,
-                                 c('lower_ci', 'upper_ci'))
+    ci_table <- set_names(ci_table, c('lower_ci', 'upper_ci'))
 
-    ci_table <- purrr::map_dfc(ci_table, trans_function)
+    ci_table <- map_dfc(ci_table, trans_function)
 
     ## coefficients
 
     coefs <- as.data.frame(summary(cox_model)$coefficients)
 
-    coefs <- rlang::set_names(coefs[, c('coef', 'se(coef)', 'z', 'Pr(>|z|)')],
-                              c('estimate', 'se', 'stat', 'p_value'))
+    coefs <- set_names(coefs[, c('coef', 'se(coef)', 'z', 'Pr(>|z|)')],
+                       c('estimate', 'se', 'stat', 'p_value'))
 
-    coefs <- tibble::rownames_to_column(coefs, 'parameter')
+    coefs <- rownames_to_column(coefs, 'parameter')
 
-    coefs <- dplyr::mutate(coefs,
-                           estimate = trans_function(estimate),
-                           se = trans_function(estimate),
-                           n_complete = nrow(model.frame(cox_model)),
-                           stat_name = 'z')
+    coefs <- mutate(coefs,
+                    estimate = trans_function(estimate),
+                    se = trans_function(estimate),
+                    n_complete = nrow(model.frame(cox_model)),
+                    stat_name = 'z')
 
     ## output table
 
-    summ_tbl <- tibble::as_tibble(cbind(coefs, ci_table))
+    summ_tbl <- as_tibble(cbind(coefs, ci_table))
 
-    summ_tbl <- dplyr::mutate(summ_tbl,
-                              variable = stringi::stri_extract(parameter, regex = extr_regex),
-                              level = stringi::stri_replace(parameter, regex = extr_regex, replacement = ''))
+    summ_tbl <-
+      mutate(summ_tbl,
+             variable = stri_extract(parameter,
+                                     regex = extr_regex),
+             level = stri_replace(parameter,
+                                  regex = extr_regex,
+                                  replacement = ''))
 
     ## counting the n for the
 
-    mod_counts <- purrr::map_dfr(modeling_vars,
-                                 ~count_(data = mod_frame, variable = .x))
+    mod_counts <- map_dfr(modeling_vars,
+                          ~count_(data = mod_frame, variable = .x))
 
-    mod_counts <- dplyr::mutate(mod_counts,
-                                parameter = paste0(variable, level))
+    mod_counts <- mutate(mod_counts,
+                         parameter = paste0(variable, level))
 
-    summ_tbl <- dplyr::left_join(summ_tbl,
-                                 mod_counts[c('parameter', 'n')],
-                                 by = 'parameter')
+    summ_tbl <- left_join(summ_tbl,
+                          mod_counts[c('parameter', 'n')],
+                          by = 'parameter')
 
     ## output
 
@@ -145,13 +152,13 @@
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -159,16 +166,16 @@
 
     ## computation
 
-    resid_tbl <- broom::augment(x = cox_model,
-                                data = data,
-                                type.predict = type.predict,
-                                type.residuals = type.residuals, ...)
+    resid_tbl <- augment(x = cox_model,
+                         data = data,
+                         type.predict = type.predict,
+                         type.residuals = type.residuals, ...)
 
-    resid_tbl <- dplyr::mutate(resid_tbl,
-                               .std.resid = scale(.resid)[, 1],
-                               .observation = 1:nrow(resid_tbl),
-                               .sq.std.resid = .std.resid^2,
-                               .candidate_missfit = ifelse(abs(.std.resid) > qnorm(0.975), 'yes', 'no'))
+    resid_tbl <- mutate(resid_tbl,
+                        .std.resid = scale(.resid)[, 1],
+                        .observation = 1:nrow(resid_tbl),
+                        .sq.std.resid = .std.resid^2,
+                        .candidate_missfit = ifelse(abs(.std.resid) > qnorm(0.975), 'yes', 'no'))
 
     calc_expected_(resid_tbl, '.std.resid')
 
@@ -208,13 +215,13 @@
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -224,7 +231,7 @@
 
     ## R-squared ----
 
-    rsq_tbl <- survMisc::rsq(cox_model)
+    rsq_tbl <- rsq(cox_model)
 
     ## concordance ----
 
@@ -232,9 +239,9 @@
 
     se <- c_index[2]
 
-    c_tbl <- tibble::tibble(c_index = c_index[1],
-                            lower_ci = c_index[1] + qnorm(0.025) * se,
-                            upper_ci = c_index[1] + qnorm(0.975) * se)
+    c_tbl <- tibble(c_index = c_index[1],
+                    lower_ci = c_index[1] + qnorm(0.025) * se,
+                    upper_ci = c_index[1] + qnorm(0.975) * se)
 
     ## integrated Brier score ------
 
@@ -258,16 +265,16 @@
 
     ## output -------
 
-    res_tbl <- tibble::tibble(n_complete = n_num['total'],
+    res_tbl <- tibble(n_complete = n_num['total'],
                               n_events = n_num['events'],
-                              aic = stats::AIC(cox_model),
-                              bic = stats::BIC(cox_model),
+                              aic = AIC(cox_model),
+                              bic = BIC(cox_model),
                               raw_rsq = rsq_tbl[[rsq_type]],
                               mae = mean(abs(resid_tbl$.resid)),
                               mse = mean(resid_tbl$.resid^2),
                               rmse = sqrt(mean(resid_tbl$.resid^2)))
 
-    tibble::as_tibble(cbind(res_tbl, c_tbl, ibs_tbl))
+    as_tibble(cbind(res_tbl, c_tbl, ibs_tbl))
 
   }
 
@@ -301,7 +308,6 @@
 #' Stat. Med. 18, 2529–2545 (1999).
 #'
 #' @md
-#' @import prodlim
 #' @export
 
   get_cox_pec <- function(cox_model,
@@ -313,13 +319,13 @@
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -335,19 +341,19 @@
 
     km_formula <- as.formula(km_formula)
 
-    pec_obj <- pec::pec(object = cox_model,
-                        formula = km_formula,
-                        data = data,
-                        splitMethod = splitMethod, ...)
+    pec_obj <- pec(object = cox_model,
+                   formula = km_formula,
+                   data = data,
+                   splitMethod = splitMethod, ...)
 
     if(type == 'pec') return(pec_obj)
 
     if(type == 'ibs') {
 
-      crps <- pec::crps(pec_obj)
+      crps <- crps(pec_obj)
 
-      return(tibble::tibble(ibs_reference = crps[1, 1],
-                            ibs_model = crps[2, 1]))
+      return(tibble(ibs_reference = crps[1, 1],
+                    ibs_model = crps[2, 1]))
 
     }
 
@@ -355,7 +361,7 @@
     reference <- pec_obj$AppErr[[1]]
     training <- pec_obj$AppErr[[2]]
 
-    if(stringi::stri_detect(splitMethod, regex = '^cv')) {
+    if(stri_detect(splitMethod, regex = '^cv')) {
 
       test <- pec_obj$crossvalErr[[2]]
 
@@ -412,13 +418,13 @@
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -433,31 +439,30 @@
 
     tst_results <- shapiro.test(resid_tbl$.resid)
 
-    tst_results <- tibble::tibble(variable = 'GLOBAL',
-                                  type = 'normality',
-                                  test = 'Shapiro-Wilk test',
-                                  stat_name = 'W',
-                                  stat_value = tst_results[['statistic']],
-                                  df = NA,
-                                  p_value = tst_results[['p.value']])
+    tst_results <- tibble(variable = 'GLOBAL',
+                          type = 'normality',
+                          test = 'Shapiro-Wilk test',
+                          stat_name = 'W',
+                          stat_value = tst_results[['statistic']],
+                          df = NA,
+                          p_value = tst_results[['p.value']])
 
     ## proportional hazard
 
-    proph <- data.frame(survival::cox.zph(cox_model)$table)
+    proph <- data.frame(cox.zph(cox_model)$table)
 
-    proph <- tibble::rownames_to_column(proph, 'variable')
+    proph <- rownames_to_column(proph, 'variable')
 
-    proph <- dplyr::mutate(proph,
-                           type = 'proportional hazard',
-                           test = 'zph',
-                           stat_name = 'chi-squared',
-                           stat_value = chisq,
-                           p_value = p)
+    proph <- mutate(proph,
+                    type = 'proportional hazard',
+                    test = 'zph',
+                    stat_name = 'chi-squared',
+                    stat_value = chisq,
+                    p_value = p)
 
     ## output
 
-    tibble::as_tibble(rbind(tst_results,
-                            proph[names(tst_results)]))
+    as_tibble(rbind(tst_results, proph[names(tst_results)]))
 
   }
 
@@ -467,9 +472,11 @@
 #' Calculate D'Agostino - Nam calibration stats.
 #'
 #' @description Calculates the D'Agostino - Nam calibration for a Coxph model,
-#' a variant of the Hosmer - Lemeshov test (DOI: 10.1016/S0169-7161(03)23001-7).
-#' The linear predictor score of the Cox model is cut into
-#' n quantile strata by \code{\link{cut_quantiles}}.
+#' a variant of the Hosmer - Lemeshov test (DOI: 10.1016/S0169-7161(03)23001-7),
+#' and computes square distances between the predicted survival probability and
+#' the outcome as proposed by Graf et al.
+#' For  the D'Agostino - Nam calibration the linear predictor score of the Cox
+#' model is cut into n quantile strata by \code{\link{cut_quantiles}}.
 #' The 'observed' survival odds are derived from a Kaplan-Meier
 #' survival estimate calculated by \code{\link[survminer]{surv_fit}}.
 #' The 'fitted' survival obs are derived from the Cox proportional hazard models
@@ -499,9 +506,12 @@
 #' the sum D'Agostino - Nam chi-squared statistic,
 #' its degrees of freedom (df = strata number - 2 or df = 1 for two strata)
 #' and p value for the global linear predictor score.
+#' * 'squares': a data frame with times, observed event, model-predicted
+#' survival probability and squared distance between the prediction and observed
+#' survival.
 #'
 #' @param cox_model a CoxpPH model or a coxex object.
-#' @param fit a CoxpPH model or a coxex object.
+#' @param fit a CoxPH model or a coxex object.
 #' @param n a single numeric defining the number of quantile intervals of
 #' the Cox model's linear predictor score.
 #' @param labels an optional user-provided vector of labels for
@@ -523,6 +533,9 @@
 #' Stata J. 14, 738–755 (2014).
 #' * Crowson, C. S. et al. Assessing calibration of prognostic risk
 #' scores. Stat. Methods Med. Res. 25, 1692–1706 (2016).
+#' * Graf, E., Schmoor, C., Sauerbrei, W. & Schumacher, M. Assessment and
+#' comparison of prognostic classification schemes for survival data. Stat.
+#' Med. 18, 2529–2545 (1999).
 #'
 #' @md
 #' @export
@@ -538,18 +551,19 @@
     strata <- n.event <- .data <- surv <- prob <- NULL
     km_events <- cox_events <- km_prob <- cox_prob <- NULL
     sq_resid <- rr <- x2_dn <- label <- NULL
+    df <- NULL
 
     ## entry control --------
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -574,24 +588,24 @@
 
       if(is.null(labels)) {
 
-        score_tbl <- rlang::set_names(score_tbl,
-                                      c('lp_score',
-                                        'strata'))
+        score_tbl <- set_names(score_tbl,
+                               c('lp_score',
+                                 'strata'))
 
       } else {
 
-        score_tbl <- rlang::set_names(score_tbl,
-                                      c('lp_score',
-                                        'strata',
-                                        'label'))
+        score_tbl <- set_names(score_tbl,
+                               c('lp_score',
+                                 'strata',
+                                 'label'))
 
       }
 
     } else {
 
       score_tbl <-
-        tibble::tibble(lp_score = lp_score,
-                       strata = factor(lp_score))
+        tibble(lp_score = lp_score,
+               strata = factor(lp_score))
 
       if(!is.null(labels)) {
 
@@ -606,102 +620,134 @@
 
         lab_fun <-function(x) {
 
-          rlang::set_names(labels, levels(score_tbl[['strata']]))[x]
+          set_names(labels, levels(score_tbl[['strata']]))[x]
 
         }
 
         score_tbl <-
-          dplyr::mutate(score_tbl,
-                        label = forcats::fct_relabel(strata, lab_fun))
+          mutate(score_tbl,
+                 label = fct_relabel(strata, lab_fun))
 
       }
 
     }
 
-    score_tbl <- dplyr::mutate(score_tbl,
-                               strata_number = as.numeric(strata))
+    score_tbl <- mutate(score_tbl, strata_number = as.numeric(strata))
 
     surv_object <- model.frame(cox_model)[[1]]
 
     ## KM estimates ---------
 
-    survfit_obj <- survminer::surv_fit(formula = surv_object ~ strata,
-                                       data = score_tbl)
+    survfit_obj <- surv_fit(formula = surv_object ~ strata,
+                            data = score_tbl)
 
-    km_est <- suppressWarnings(survminer::surv_summary(survfit_obj))
+    km_est <- suppressWarnings(surv_summary(survfit_obj))
 
-    km_est <- tibble::as_tibble(km_est)
+    km_est <- as_tibble(km_est)
 
     ## there's obviously an error with handling some level labels
     ## by survminer::surv_summary. A patch below:
 
-    strata_reco <- rlang::set_names(unique(as.character(km_est$strata)),
-                                    levels(score_tbl$strata))
+    strata_reco <- set_names(unique(as.character(km_est$strata)),
+                             levels(score_tbl$strata))
 
-    km_est <- dplyr::mutate(km_est,
-                            strata = forcats::fct_recode(strata,
-                                                         !!!strata_reco),
-                            strata = factor(strata, levels(score_tbl$strata)))
+    km_est <- mutate(km_est,
+                     strata = fct_recode(strata,
+                                         !!!strata_reco),
+                     strata = factor(strata, levels(score_tbl$strata)))
 
     ## Cox estimates ---------
 
-    cox_model_strata <- survival::coxph(surv_object ~ strata_number,
-                                       data = score_tbl)
+    cox_model_strata <- coxph(surv_object ~ strata_number,
+                              data = score_tbl)
 
     cox_est <-
-      tibble::tibble(n.event = predict(cox_model_strata, type = 'expected'),
-                     strata = score_tbl[['strata']])
+      tibble(n.event = predict(cox_model_strata, type = 'expected'),
+             strata = score_tbl[['strata']])
 
     cox_est <-
-      dplyr::mutate(cox_est,
-                    prob = exp(-n.event),
-                    time = unclass(model.frame(cox_model_strata)[[1]])[, 1])
+      mutate(cox_est,
+             prob = exp(-n.event),
+             time = unclass(model.frame(cox_model_strata)[[1]])[, 1])
 
     ## mean KM survival and Cox risk estimates per strata ----------
 
-    mean_km_est <- dplyr::group_by(km_est, .data[['strata']])
-    mean_cox_est <- dplyr::group_by(cox_est, .data[['strata']])
+    mean_km_est <- group_by(km_est, .data[['strata']])
+    mean_cox_est <- group_by(cox_est, .data[['strata']])
 
-    mean_km_est <- dplyr::summarise(mean_km_est,
-                                    km_prob = mean(surv, na.rm = TRUE),
-                                    km_events = sum(n.event))
+    mean_km_est <- summarise(mean_km_est,
+                             km_prob = mean(surv, na.rm = TRUE),
+                             km_events = sum(n.event))
 
-    mean_cox_est <- dplyr::summarise(mean_cox_est,
-                                     cox_prob = mean(prob, na.rm = TRUE),
-                                     cox_events = sum(n.event))
+    mean_cox_est <- summarise(mean_cox_est,
+                              cox_prob = mean(prob, na.rm = TRUE),
+                              cox_events = sum(n.event))
 
-    mean_km_est <- dplyr::mutate(mean_km_est,
-                                 strata = factor(strata,
-                                                 levels(score_tbl$strata)))
+    mean_km_est <- mutate(mean_km_est,
+                          strata = factor(strata,
+                                          levels(score_tbl$strata)))
 
-    mean_cox_est <- dplyr::mutate(mean_cox_est,
-                                  strata = factor(strata,
-                                                  levels(score_tbl$strata)))
+    mean_cox_est <- mutate(mean_cox_est,
+                           strata = factor(strata,
+                                           levels(score_tbl$strata)))
 
-    strata_est <- dplyr::left_join(mean_km_est,
-                                   mean_cox_est,
-                                   by = 'strata')
+    strata_est <- left_join(mean_km_est,
+                            mean_cox_est,
+                            by = 'strata')
 
     strata_est <-
-      dplyr::mutate(strata_est,
-                    n = survfit_obj$n,
-                    km_survivors = n - km_events,
-                    cox_survivors = n - cox_events,
-                    resid = km_prob - cox_prob,
-                    sq_resid = resid^2,
-                    rel_prob = km_prob/cox_prob,
-                    rr = (1 - km_prob)/(1 - cox_prob),
-                    x2_dn = sq_resid * n/(cox_prob * (1 - cox_prob)))
+      mutate(strata_est,
+             n = survfit_obj$n,
+             km_survivors = n - km_events,
+             cox_survivors = n - cox_events,
+             resid = km_prob - cox_prob,
+             sq_resid = resid^2,
+             rel_prob = km_prob/cox_prob,
+             rr = (1 - km_prob)/(1 - cox_prob),
+             x2_dn = sq_resid * n/(cox_prob * (1 - cox_prob)))
 
-    global_est <- dplyr::summarise(strata_est,
-                                   mean_sq_resid = mean(sq_resid),
-                                   mean_rr = mean(rr),
-                                   x2_dn = sum(x2_dn))
+    global_est <- summarise(strata_est,
+                            mean_sq_resid = mean(sq_resid),
+                            mean_rr = mean(rr),
+                            x2_dn = sum(x2_dn))
 
     global_est <-
-      dplyr::mutate(global_est,
-                    df = if(nrow(strata_est) > 2) nrow(strata_est) - 2 else 1,
-                    p_value = pchisq(q = x2_dn, df = df, lower.tail = FALSE))
+      mutate(global_est,
+             df = if(nrow(strata_est) > 2) nrow(strata_est) - 2 else 1,
+             p_value = pchisq(q = x2_dn, df = df, lower.tail = FALSE))
+
+    ## the observed and modeled survival without any stratification ------
+    ## and squared distance between the observed and predicted survival
+
+    ## the null model will be used to obtain square distance for a reference
+
+    null_model <- coxph(formula = surv_object ~ 1, data = score_tbl)
+
+    preds <- map(list(model = cox_model, reference = null_model),
+                 ~tibble(n.event = predict(.x, type = 'expected'),
+                         lp_score = predict(.x, type = 'lp'),
+                         prob = exp(-n.event)))
+
+    preds <- map(preds,
+                 ~mutate(.x, .observation = 1:nrow(.x)))
+
+    surv_df <- surv2df(surv_object)
+
+    preds <- map(preds,
+                 left_join,
+                 surv_df, by = '.observation')
+
+    preds <- map2(preds, c('squares_model', 'squares_reference'),
+                  ~mutate(.x,
+                          !!.y := ((1 - prob) - status)^2))
+
+    preds$model <-
+      preds$model[c('time', '.observation', 'lp_score',
+                    'prob', 'status', 'squares_model')]
+
+    squares <- cbind(preds$model, preds$reference['squares_reference'])
+
+    ## output ----------
 
     results <- list(lp_scores = score_tbl,
                     surv_fit = survfit_obj,
@@ -709,34 +755,35 @@
                     km_estimates = km_est,
                     cox_estimates = cox_est,
                     strata_calibration = strata_est,
-                    global_calibration = global_est)
+                    global_calibration = global_est,
+                    squares = as_tibble(squares))
 
     if(!is.null(labels)) {
 
-      label_tbl <- tibble::tibble(strata = levels(score_tbl$strata),
-                                  label = levels(score_tbl$label))
+      label_tbl <- tibble(strata = levels(score_tbl$strata),
+                          label = levels(score_tbl$label))
 
       results[c('km_estimates',
                 'cox_estimates',
                 'strata_calibration')] <-
-        purrr::map(results[c('km_estimates',
-                             'cox_estimates',
-                             'strata_calibration')],
-                  ~dplyr::left_join(.x, label_tbl, by = 'strata'))
+        map(results[c('km_estimates',
+                      'cox_estimates',
+                      'strata_calibration')],
+            ~left_join(.x, label_tbl, by = 'strata'))
 
       results[c('km_estimates',
                 'cox_estimates',
                 'strata_calibration')] <-
-        purrr::map(results[c('km_estimates',
-                             'cox_estimates',
-                             'strata_calibration')],
-                   dplyr::mutate,
-                   strata = factor(strata, levels(score_tbl$strata)),
-                   label = factor(label, levels(score_tbl$label)))
+        map(results[c('km_estimates',
+                      'cox_estimates',
+                      'strata_calibration')],
+            mutate,
+            strata = factor(strata, levels(score_tbl$strata)),
+            label = factor(label, levels(score_tbl$label)))
 
     }
 
-    eval(rlang::call2('calibrator', !!!results))
+    eval(call2('calibrator', !!!results))
 
   }
 
@@ -806,13 +853,13 @@
 
     if(is_coxex(cox_model)) {
 
-      data <- model.frame.coxex(cox_model, type = 'data')
+      data <- model.frame(cox_model, type = 'data')
 
       cox_model <- cox_model$model
 
     }
 
-    if(!any(class(cox_model) == 'coxph')) {
+    if(!inherits(cox_model, 'coxph')) {
 
       stop('Please provide a valid coxph class model.', call. = FALSE)
 
@@ -823,29 +870,28 @@
 
     ## fitting a cph model required for validation --------
 
-    cph_model <- rms::cph(formula = formula(cox_model),
-                          data = data,
-                          x = TRUE,
-                          y = TRUE)
+    cph_model <- cph(formula = formula(cox_model),
+                     data = data,
+                     x = TRUE,
+                     y = TRUE)
 
-    val_results <- rms::validate(cph_model)
+    val_results <- validate(cph_model)
 
     val_results <- t(unclass(as.matrix(val_results)))
 
     val_results <- as.data.frame(val_results)
 
-    val_results <- tibble::rownames_to_column(val_results, 'dataset')
+    val_results <- rownames_to_column(val_results, 'dataset')
 
-    val_results <- dplyr::filter(val_results,
-                                 dataset %in% c('index.orig',
-                                                'training',
-                                                'test',
-                                                'index.corrected'))
+    val_results <- filter(val_results,
+                          dataset %in% c('index.orig',
+                                         'training',
+                                         'test',
+                                         'index.corrected'))
 
-    val_results <- dplyr::mutate(val_results,
-                                 c_index = (Dxy + 1)/2)
+    val_results <- mutate(val_results, c_index = (Dxy + 1)/2)
 
-    tibble::as_tibble(val_results)
+    as_tibble(val_results)
 
   }
 

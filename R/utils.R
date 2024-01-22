@@ -1,4 +1,8 @@
-# Non-exported.
+# Exported and non-exported utils.
+
+#' @include imports.R
+
+  NULL
 
 # Numeric vector stratification ------
 
@@ -67,22 +71,20 @@
 
     cut_vec <- cut(x, breaks = quant_vector)
 
-    cut_tbl <- tibble::tibble(x = x,
-                              strata = cut_vec)
+    cut_tbl <- tibble(x = x, strata = cut_vec)
 
     if(!is.null(labels)) {
 
       levs <- levels(cut_tbl$strata)
 
-      label_tbl <- tibble::tibble(strata = levs,
-                                  label = factor(labels, levels = labels))
+      label_tbl <- tibble(strata = levs,
+                          label = factor(labels, levels = labels))
 
-      cut_tbl <- dplyr::left_join(cut_tbl,
-                                  label_tbl,
-                                  by = 'strata')
+      cut_tbl <- left_join(cut_tbl,
+                           label_tbl,
+                           by = 'strata')
 
-      cut_tbl <- plyr::mutate(cut_tbl,
-                              strata = factor(strata, levels = levs))
+      cut_tbl <- mutate(cut_tbl, strata = factor(strata, levels = levs))
 
     }
 
@@ -103,8 +105,8 @@
 
   calc_expected_ <- function(data, observed) {
 
-    dplyr::mutate(data[order(data[[observed]]), ],
-                  .expect.norm = stats::qnorm(stats::ppoints(nrow(data))))
+    mutate(data[order(data[[observed]]), ],
+           .expect.norm = qnorm(ppoints(nrow(data))))
 
   }
 
@@ -122,21 +124,21 @@
 
     .data <- NULL
 
-    data <- dplyr::filter(data, !is.na(.data[[variable]]))
+    data <- filter(data, !is.na(.data[[variable]]))
 
     if(is.numeric(data[[variable]])) {
 
-      tibble::tibble(variable = variable,
-                     level = NA_character_,
-                     n = nrow(data))
+      tibble(variable = variable,
+             level = NA_character_,
+             n = nrow(data))
 
     } else {
 
-      count_tbl <- dplyr::count(data, .data[[variable]])
+      count_tbl <- count(data, .data[[variable]])
 
-      count_tbl <- dplyr::mutate(count_tbl,
-                                 level = .data[[variable]],
-                                 variable = variable)
+      count_tbl <- mutate(count_tbl,
+                          level = .data[[variable]],
+                          variable = variable)
 
       count_tbl[c('variable',
                   'level',
@@ -190,51 +192,53 @@
 
       if('.rownames' %in% names(data)) {
 
-        data <- dplyr::mutate(data, misslab = ifelse(.candidate_missfit == 'yes',
-                                                     .rownames,
-                                                     NA))
+        data <- mutate(data,
+                       misslab = ifelse(.candidate_missfit == 'yes',
+                                        .rownames,
+                                        NA))
 
       } else {
 
-        data <- dplyr::mutate(data, misslab = ifelse(.candidate_missfit == 'yes',
-                                                     .observation,
-                                                     NA))
+        data <- mutate(data,
+                       misslab = ifelse(.candidate_missfit == 'yes',
+                                        .observation,
+                                        NA))
 
       }
 
       fill_colors <- c(no = 'cornflowerblue',
                        yes = 'firebrick4')
 
-      point_plot <- ggplot2::ggplot(data,
-                                    ggplot2::aes(x = .data[[x_var]],
-                                                 y = .data[[y_var]],
-                                                 fill = .candidate_missfit)) +
-        ggplot2::geom_point(size = 2,
-                            shape = 21) +
-        ggrepel::geom_text_repel(ggplot2::aes(label = misslab),
-                                 show.legend = FALSE) +
-        ggplot2::scale_fill_manual(values = fill_colors,
-                                   name = 'Candidate outlier')
+      point_plot <- ggplot(data,
+                           aes(x = .data[[x_var]],
+                               y = .data[[y_var]],
+                               fill = .candidate_missfit)) +
+        geom_point(size = 2,
+                   shape = 21) +
+        geom_text_repel(aes(label = misslab),
+                        show.legend = FALSE) +
+        scale_fill_manual(values = fill_colors,
+                          name = 'Candidate outlier')
 
     } else {
 
-      point_plot <- ggplot2::ggplot(data,
-                                    ggplot2::aes(x = .data[[x_var]],
-                                                 y = .data[[y_var]])) +
-        ggplot2::geom_point(size = 2,
-                            shape = 21,
-                            fill = 'steelblue',
-                            position = ggplot2::position_jitter(width = point_wjitter,
-                                                                height = point_hjitter))
+      point_plot <- ggplot(data,
+                           aes(x = .data[[x_var]],
+                               y = .data[[y_var]])) +
+        geom_point(size = 2,
+                   shape = 21,
+                   fill = 'steelblue',
+                   position = position_jitter(width = point_wjitter,
+                                              height = point_hjitter))
 
     }
 
     ## point plot
 
     point_plot <- point_plot +
-      ggplot2::labs(x = x_lab,
-                    y = y_lab,
-                    title = plot_title) +
+      labs(x = x_lab,
+           y = y_lab,
+           title = plot_title) +
       cust_theme
 
     if(smooth) {
@@ -242,22 +246,105 @@
       if(silent) {
 
         suppressWarnings(point_plot <- point_plot +
-                           ggplot2::geom_smooth(show.legend = FALSE,
-                                                color = 'black',
-                                                fill = 'dodgerblue2', ...))
+                           geom_smooth(show.legend = FALSE,
+                                       color = 'black',
+                                       fill = 'dodgerblue2', ...))
 
       } else {
 
         point_plot <- point_plot +
-          ggplot2::geom_smooth(show.legend = FALSE,
-                               color = 'black',
-                               fill = 'dodgerblue2', ...)
+          geom_smooth(show.legend = FALSE,
+                      color = 'black',
+                      fill = 'dodgerblue2', ...)
 
       }
 
     }
 
     return(point_plot)
+
+  }
+
+# Conversion of survival objects to data frames ----------
+
+#' Convert a survival object to a data frame with censored survival data.
+#'
+#' @description
+#' Converts a survival object (class 'Surv') to a data frame with unique time
+#' points and event indicators. The function accounts for censoring, i.e.
+#' observations censored at a particular time point i do not appear at the
+#' time point i + 1.
+#'
+#' @param surv_object and instance of the 'Surv' class.
+#'
+#' @return
+#' a data frame with the following columns:
+#'
+#' * 'time': unique time point inferred from the survival object.
+#'
+#' * '.observation': index of the observation in the input survival object.
+#'
+#' * 'status': event index as indicated in the survival object
+#'
+#' @export
+
+  surv2df <- function(surv_object) {
+
+    ## data frame with the survival times and censoring indexes
+    ## unique data points and observations
+
+    if(!inherits(surv_object, 'Surv')) {
+
+      stop(!"'surv_object' has to be an instance of the 'Surv' class.",
+           call. = FALSE)
+
+    }
+
+    .observation <- NULL
+    time <- NULL
+
+    surv_df <- as_tibble(unclass(surv_object))
+
+    surv_df <- mutate(surv_df,
+                      .observation = 1:nrow(surv_df))
+
+    unique_times <- sort(unique(surv_df$time))
+
+    ## a list with survival status for unique time points
+
+    surv_res <-
+      map(unique_times,
+          ~filter(surv_df, time >= .x))
+
+    surv_res <- map2(surv_res, unique_times,
+                     ~mutate(.x, status = ifelse(time == .y, status, 0)))
+
+    surv_res <- map(surv_res, ~.x[c('.observation', 'status')])
+
+    surv_res <- map2_dfr(surv_res, unique_times,
+                         ~mutate(.x, time = .y))
+
+    relocate(surv_res, time)
+
+  }
+
+# Standard error of the mean ---------
+
+#' Standard error of the mean.
+#'
+#' @description
+#' Computes standard error of the mean (SEM) for a numeric vactor. Any NAs are
+#' silently removed.
+#'
+#' @param x a numeric vector.
+#'
+#' @return a single numeric value.
+
+  sem <- function(x) {
+
+    x <- x[!is.na(x)]
+
+    sd(x)/sqrt(length(x))
 
   }
 
