@@ -416,10 +416,14 @@
 
     ## plots of squared errors ---------
 
-    return(plot_squares(cal_object = x,
-                        palette = palette,
-                        show_reference = show_reference,
-                        error_stat = error_stat, ...))
+    if(type == 'squares') {
+
+      return(plot_squares(cal_object = x,
+                          palette = palette,
+                          show_reference = show_reference,
+                          error_stat = error_stat, ...))
+
+    }
 
     ## KM plot for the strata ----------
 
