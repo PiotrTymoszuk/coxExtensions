@@ -25,6 +25,7 @@
 #' @importFrom purrr map_dfr
 #' @importFrom purrr map_lgl
 #' @importFrom purrr map2_dfr
+#' @importFrom purrr map_dbl
 #'
 #' @importFrom forcats fct_relabel
 #' @importFrom forcats fct_recode
@@ -38,6 +39,9 @@
 #' @importFrom rlang `!!`
 #' @importFrom rlang `!!!`
 #' @importFrom rlang `:=`
+#' @importFrom rlang env
+#' @importFrom rlang parse_quo
+#' @importFrom rlang list2
 #'
 #' @importFrom stringi stri_extract
 #' @importFrom stringi stri_replace
@@ -65,6 +69,8 @@
 #' @importFrom stats sd
 #' @importFrom stats median
 #' @importFrom stats reorder
+#' @importFrom stats complete.cases
+#' @importFrom stats na.omit
 #'
 #' @importFrom pec pec
 #' @importFrom pec crps
@@ -97,9 +103,14 @@
 #' @importFrom ggplot2 facet_grid
 #' @importFrom ggplot2 element_blank
 #'
+#' @importFrom caret createFolds
+#'
 #' @importFrom ggrepel geom_text_repel
 #'
+#' @importFrom coxed bca
+#'
+#' @importFrom caret createMultiFolds
+#'
 #' @import prodlim
-
 
   NULL

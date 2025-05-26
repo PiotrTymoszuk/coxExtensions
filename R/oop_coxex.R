@@ -57,7 +57,7 @@
 
 # Class testing ----
 
-#' Test for the coxex class.
+#' Test for the `coxex` class.
 #'
 #' @description Tests if an object is an instance of the coxex class.
 #' @param x an object.
@@ -68,7 +68,7 @@
 
 # Coercion -----
 #'
-#' Convert to a coxph class.
+#' Convert to a `coxph` class.
 #'
 #' @description Converts a coxex model to a coxph object.
 #' @param x a coxex model.
@@ -83,21 +83,25 @@
 
   }
 
-# Appearance -----
+# Appearance -------
 
-#' Print a coxex model.
-#'
-#' @description Prints a coxex model.
-#' @param x a coxex object.
-#' @param ... extra arguments, none specified.
-#' @return none, called for its side effects.
-#' @export
+  #' Print method for `coxex` objects.
+  #'
+  #' @description
+  #' Print method for `coxex` class.
+  #'
+  #' @param x a `coxex` object.
+  #' @param ... extra arguments, currently none.
+  #'
+  #' @return None, called for its side effects.
+  #'
+  #' @export
 
   print.coxex <- function(x, ...) {
 
-    stopifnot(is_coxex(x))
-
-    print(x$model)
+    cat('COXEX object with formula:')
+    cat('\n')
+    print(formula(x))
 
   }
 
@@ -454,6 +458,68 @@
            fit = plot_cox_fit(cox_model = x,
                               cust_theme = cust_theme,
                               ...))
+
+  }
+
+# Likelihood ratio test and ANOVA ------
+
+#' Analysis of deviance for `coxex` objects.
+#'
+#' @description
+#' Performs an analysis of deviance table for one or more `coxex` class objects,
+#' via chi-square test just like \code{\link[survival]{anova.coxph}}.
+#'
+#' @details
+#' Please refer to the genuine method \code{\link[survival]{anova.coxph}}.
+#'
+#' @return an data frame with model identifier, model formula,
+#' and the testing results.
+#'
+#' @param object a `coxex` object.
+#' @param ... additional `coxex` objects.
+#'
+#' @export
+
+  anova.coxex <- function(object, ...) {
+
+    ## input control ------
+
+    err_txt <- "The function requires 'coxex' class objects."
+
+    if(!is_coxex(object)) stop(err_txt, call. = FALSE)
+
+    object_lst <- list2(...)
+
+    classes <- map_lgl(object_lst, is_coxex)
+
+    if(any(!classes)) stop(err_txt, call. = FALSE)
+
+    ## list of COXPH objects, extraction of explanatory factors
+
+    expl_factors <- map(c(list(object), object_lst), formula)
+
+    expl_factors <- map(expl_factors, ~as.character(.x[3]))
+
+    object <- as_coxph(object)
+
+    object_lst <- map(object_lst, as_coxph)
+
+    ## ANOVA ------
+
+    anova_call <- call2('anova',
+                        object,
+                        !!!object_lst)
+
+    anova_res <- as_tibble(as.data.frame(eval(anova_call)))
+
+    model <- NULL
+    formula <- NULL
+
+    anova_res <- mutate(anova_res,
+                        model = paste0('model', 1:nrow(anova_res)),
+                        formula = paste('~', expl_factors))
+
+    relocate(anova_res, model, formula)
 
   }
 

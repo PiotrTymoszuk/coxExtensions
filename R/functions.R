@@ -266,13 +266,13 @@
     ## output -------
 
     res_tbl <- tibble(n_complete = n_num['total'],
-                              n_events = n_num['events'],
-                              aic = AIC(cox_model),
-                              bic = BIC(cox_model),
-                              raw_rsq = rsq_tbl[[rsq_type]],
-                              mae = mean(abs(resid_tbl$.resid)),
-                              mse = mean(resid_tbl$.resid^2),
-                              rmse = sqrt(mean(resid_tbl$.resid^2)))
+                      n_events = n_num['events'],
+                      aic = AIC(cox_model),
+                      bic = BIC(cox_model),
+                      raw_rsq = rsq_tbl[[rsq_type]],
+                      mae = mean(abs(resid_tbl$.resid)),
+                      mse = mean(resid_tbl$.resid^2),
+                      rmse = sqrt(mean(resid_tbl$.resid^2)))
 
     as_tibble(cbind(res_tbl, c_tbl, ibs_tbl))
 
@@ -350,10 +350,14 @@
 
     if(type == 'ibs') {
 
-      crps <- crps(pec_obj)
+      times <- pec_obj$minmaxtime
 
-      return(tibble(ibs_reference = crps[1, 1],
-                    ibs_model = crps[2, 1]))
+      out <- crps(object = pec_obj,
+                  times = pec_obj$minmaxtime,
+                  start = pec_obj$start)
+
+      return(tibble(ibs_reference = out[1, 1],
+                    ibs_model = out[2, 1]))
 
     }
 
