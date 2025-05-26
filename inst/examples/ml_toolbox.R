@@ -73,7 +73,10 @@
   ## comparison of the nested models by analysis of deviance table
   ## the diagnosis date-only model seems to do the job
 
-  anova(full_model, opt_model1, opt_model2, null_model)
+  anova(full_model,
+        opt_model1,
+        opt_model2,
+        null_model)
 
 # Assumption testing, fit stats, and inference -----------
 
@@ -102,15 +105,24 @@
   cox_cv %>%
     summary('fit', ci_type = 'bca')
 
+  ## last-one-out cross-validation (takes a while)
+
+  cox_loocv <- loocvCox(opt_model2)
+
+  cox_loocv %>%
+    summary("inference")
+
+  cox_loocv %>%
+    summary("fit")
+
+
 # Predictions --------
 
   cox_predictions <-
-    mlCox(opt_model2, newdata = mass_aids[c("VIC", "QLD", "Other")])
+    mlCox(opt_model2,
+          newdata = mass_aids[c("VIC", "QLD", "Other")])
 
   cox_predictions %>%
     summary('fit')
-
-  mlCox(cox_model,
-        newdata = mass_aids$Other)
 
 # END ----

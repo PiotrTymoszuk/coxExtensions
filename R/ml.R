@@ -1,4 +1,4 @@
-# Machine learning toolbox for Cox models
+# Machine learning toolbox for Cox proportional hazard models
 
 #' @include imports.R
 
@@ -6,7 +6,7 @@
 
 # Training of a Cox model and predictions --------
 
-#' Train a canonical Cox model and make predictions.
+#' Train a canonical Cox proportional hazard model and make predictions.
 #'
 #' @description
 #' A handy wrapper which fits a proportional hazard function via
@@ -162,15 +162,15 @@
 
     train_formula <- formula(data)
 
-    mlCox.default(data = train_data,
-                  newdata = newdata,
-                  formula = train_formula, ...)
+    mlCox(data = train_data,
+          newdata = newdata,
+          formula = train_formula, ...)
 
   }
 
 # Cross-validation of the Cox models -------
 
-#' Cross-validation of canonical Cox models.
+#' Cross-validation of canonical Cox proportional hazard models.
 #'
 #' @description
 #' Cross-validation and repeated cross-validation of Cox proportional
@@ -296,6 +296,143 @@
                   formula = train_formula,
                   n_folds = n_folds,
                   n_repeats = n_repeats, ...)
+
+  }
+
+# Last one-out cross-validation -----------
+
+#' Last-one-out cross-validation (LOOCV) of Cox proportional hazard models.
+#'
+#' @description
+#' The function `loocvCox()` performs leave last-one-out cross-validation
+#' (LOOCV) of a Cox proportional hazard model.
+#'
+#' @details
+#' In LOOCV, a series of n Cox proportional hazard models is constructed, each
+#' for n - 1 observations, where n stands for the total number of observations.
+#' In other words, in each iteration, all observations except one are used to
+#' construct a model.
+#' For the renaming single observation, the value of the linear predictor score
+#' of the model fit with the n - observation is generated.
+#' The whole procedure is repeated n times, so that for each observation the
+#' linear predictor scores are computed.
+#' Finally, we use these leave-one-out linear predictor scores to construct a
+#' univariable Cox proportional hazard model (an instance of \code{\link{coxex}}
+#' class).
+#' This cross-validated model can be subsequently evaluated with the standard
+#' function of the package (e.g. with \code{\link{summary.coxex}} to test for
+#' assumptions, and calculate performance statistics).
+#'
+#' @return a \code{\link{coxex}} object.
+#'
+#' @param data a data frame with survival information or a \code{\link{coxex}}
+#' model.
+#' @param formula a formula of the Cox model; it must call a `Surv()` object,
+#' i.e. contain a `'Surv()'` term.
+#' @param ... additional arguments passed to \code{\link[survival]{coxph}}.
+#' Note that `x` and `y` are already used.
+#'
+#' @export
+
+  loocvCox <- function(data, ...) UseMethod("loocvCox")
+
+#' @rdname loocvCox
+#' @export loocvCox.default
+#' @export
+
+  loocvCox.default <- function(data,
+                               formula, ...) {
+
+    ## input control -------
+
+    if(!is.data.frame(data)) {
+
+      stop("'data' has to be a data frame.", call. = FALSE)
+
+    }
+
+    data <- filter(data, complete.cases(data))
+
+    form_terms <- as.character(formula)
+
+    if(length(form_terms) < 3) {
+
+      stop("A flawed formula provided.", call. = FALSE)
+
+    }
+
+    if(!stri_detect(form_terms[2], regex = "^Surv")) {
+
+      stop(paste("'formula' must call a survival object, i.e.",
+                 "contain a 'Surv()' term."),
+           call. = FALSE)
+
+    }
+
+    if(!is_tibble(data) & !is.null(rownames(data))) {
+
+      obs_names <- rownames(data)
+
+    } else {
+
+      obs_names <- paste0("rep_", 1:nrow(data))
+
+    }
+
+    ## training and test data --------
+
+    row_ids <- set_names(1:nrow(data), obs_names)
+
+    train_data <- map(row_ids, ~data[-.x, , drop = FALSE])
+
+    test_data <- map(row_ids, ~data[.x, , drop = FALSE])
+
+    ## construction of the models ----------
+
+    train_models <- map(train_data,
+                        function(dt) coxph(formula = formula,
+                                           data = dt,
+                                           x = TRUE,
+                                           y = TRUE, ...))
+
+    ## predictions -------
+
+    oof_lp <-
+      pmap(list(object = train_models,
+                newdata = test_data),
+           predict,
+           type = "lp")
+
+    data[["lp_score"]] <- map_dbl(oof_lp, ~.x[[1]])
+
+    ## the coxex model for the OOF predictions ------
+
+    oof_formula <- as.formula(paste(form_terms[2], "~ lp_score"))
+
+    oof_call <- call2(.fn = "coxph",
+                      formula = oof_formula,
+                      data = data,
+                      x = TRUE,
+                      y = TRUE, ...)
+
+    as_coxex(eval(oof_call), data)
+
+  }
+
+#' @rdname loocvCox
+#' @export loocvCox.coxex
+#' @export
+
+  loocvCox.coxex <- function(data, ...) {
+
+    stopifnot(is_coxex(data))
+
+    train_data <- model.frame(data, type = "data")
+
+    train_formula <- formula(data)
+
+    loocvCox(data = train_data,
+             formula = train_formula, ...)
 
   }
 

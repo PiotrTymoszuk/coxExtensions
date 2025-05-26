@@ -3,6 +3,7 @@
 #' @importFrom tibble tibble
 #' @importFrom tibble rownames_to_column
 #' @importFrom tibble as_tibble
+#' @importFrom tibble is_tibble
 #'
 #' @importFrom dplyr mutate
 #' @importFrom dplyr left_join
