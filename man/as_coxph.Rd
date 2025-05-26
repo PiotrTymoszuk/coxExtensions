@@ -2,7 +2,7 @@
 % Please edit documentation in R/oop_coxex.R
 \name{as_coxph}
 \alias{as_coxph}
-\title{Convert to a coxph class.}
+\title{Convert to a \code{coxph} class.}
 \usage{
 as_coxph(x)
 }

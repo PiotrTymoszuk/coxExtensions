@@ -2,7 +2,7 @@
 % Please edit documentation in R/oop_coxex.R
 \name{is_coxex}
 \alias{is_coxex}
-\title{Test for the coxex class.}
+\title{Test for the \code{coxex} class.}
 \usage{
 is_coxex(x)
 }

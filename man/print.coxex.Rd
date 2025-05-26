@@ -2,18 +2,18 @@
 % Please edit documentation in R/oop_coxex.R
 \name{print.coxex}
 \alias{print.coxex}
-\title{Print a coxex model.}
+\title{Print method for \code{coxex} objects.}
 \usage{
 \method{print}{coxex}(x, ...)
 }
 \arguments{
-\item{x}{a coxex object.}
+\item{x}{a \code{coxex} object.}
 
-\item{...}{extra arguments, none specified.}
+\item{...}{extra arguments, currently none.}
 }
 \value{
-none, called for its side effects.
+None, called for its side effects.
 }
 \description{
-Prints a coxex model.
+Print method for \code{coxex} class.
 }
