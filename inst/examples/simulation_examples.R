@@ -6,6 +6,8 @@
   library(survival)
   library(coxExtensions)
 
+  library(patchwork)
+
 # simulated testing data -------
 
   set.seed(1234)
@@ -108,9 +110,28 @@
 
 # cross-validation with the RMS tool set --------
 
-  validation_stats <- cox_ph_models %>%
+  ### cross-validation with the RMS tool set:
+  ### simple 10-fold cross-validation
+
+  set.seed(3131)
+
+  rms_validation_stats <- cox_ph_models %>%
     map(validate,
-        method = "crossvalidation")
+        method = "crossvalidation",
+        B = 10)
+
+  ### cross-validation with the coxExtension tool set:
+  ### 10-repeats 10-fold cross-validation
+
+  set.seed(3131)
+
+  coxex_validation_models <- cox_ph_models %>%
+    map(cvCox,
+        n_folds = 10,
+        n_repeats = 10)
+
+  coxex_validation_stats <- coxex_validation_models %>%
+    map(summary, type = "fit")
 
 # Prediction of survival -----
 
@@ -123,13 +144,15 @@
     map(~tibble(lp_score = .x)) %>%
     map(cbind, test_data[, c("surv_time", "event_var")])
 
-  cox_ph_models[c("test_uni", "test_multi")] <- test_lp_scores %>%
-    map(~call2(.fn = "coxph",
-               formula = Surv(surv_time, event_var) ~ lp_score,
-               data = .x,
+  cox_ph_models[c("test_uni", "test_multi")] <-
+    list(coxph(formula = Surv(surv_time, event_var) ~ lp_score,
+               data = test_lp_scores$uni,
+               x = TRUE,
+               y = TRUE),
+         coxph(formula = Surv(surv_time, event_var) ~ lp_score,
+               data = test_lp_scores$multi,
                x = TRUE,
                y = TRUE)) %>%
-    map(eval) %>%
     map2(test_lp_scores, coxex)
 
   ## assumptions and fit stats
@@ -149,6 +172,12 @@
 
   brier_scores %>%
     map(plot)
+
+  ## the Brier scores for the null model are
+  ## stored in the `reference` column.
+  ## the Brier scores for the model of interest are
+  ## stored in the `training` column.
+  ## we merge them into a single data frame
 
   brier_scores <- brier_scores %>%
     map(~.x[c("time", "training")]) %>%
@@ -203,6 +232,13 @@
                      "firebrick4"),
          cust_theme = theme_classic() +
            theme(plot.tag.position = "bottom"))
+
+  calibrator_plots$uni +
+    calibrator_plots$test_uni +
+    calibrator_plots$multi +
+    calibrator_plots$test_multi
+
+  ### plots of Brier squares
 
   square_plots <-
     list(x = calibrator_obj,
