@@ -7,7 +7,9 @@ Extended Inference and Goodness of Fit for Cox Models
 
 ## Summary
 
-Extends the toolbox for Cox proportional hazard models (packages `survival`, `SurvMisc`, `rms`) with inference statistic, goodness of fit,  diagnostic functions, calibration tests, and cross-validation pipelines compatible with the tidyverse format.
+Extends the toolbox for Cox proportional hazard models (packages `survival`, `SurvMisc`, `rms`) 
+with inference statistic, goodness of fit,  diagnostic functions, calibration tests, and 
+cross-validation pipelines compatible with the tidyverse format.
 
 ## Installation
 
@@ -29,13 +31,20 @@ The package maintainer is [Piotr Tymoszuk](mailto:piotr.s.tymoszuk@gmail.com).
 
 ## Acknowledgements
 
-`coxExtensions` uses tools provided by the 
-[survival](https://cran.r-project.org/web/packages/survival/index.html), [rms](https://cran.r-project.org/web/packages/rms/index.html), 
+`coxExtensions` uses tools provided by the  packages
+[survival](https://cran.r-project.org/web/packages/survival/index.html), 
+[rms](https://cran.r-project.org/web/packages/rms/index.html), 
 [survminer](https://github.com/kassambara/survminer), 
 [survMisc](https://cran.r-project.org/web/packages/survMisc/index.html), 
 [rlang](https://rlang.r-lib.org/), 
 [pec](https://cran.r-project.org/web/packages/pec/index.html), 
 [tidyverse](https://www.tidyverse.org/), 
-[stringi](https://stringi.gagolewski.com/) and 
-[ggrepel](https://github.com/slowkow/ggrepel) packages. 
+[stringi](https://stringi.gagolewski.com/),  
+[ggrepel](https://github.com/slowkow/ggrepel), 
+[caret](https://topepo.github.io/caret/), and 
+R code for calculation of BCA confidence intervals by 
+Jonathan Kropko (https://github.com/jkropko/coxed/blob/master/R/bca.R).
+
 Many thanks to their Authors and Contributors.
+
+## Basic usage

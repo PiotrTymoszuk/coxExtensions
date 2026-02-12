@@ -9,7 +9,7 @@
 #' Build a brier class object.
 #'
 #' @description Generates a `brier` class object based on a list
-#' of unique times, Bier scores per timepoint e.g. calculated with
+#' of unique times, Bier scores per time point e.g. calculated with
 #' \code{\link[pec]{pec}} for the reference, training and test data.
 #'
 #' @return an instance of the `brier` class with the `plot()` method.
@@ -22,9 +22,9 @@
 #' @param times a numeric vector of unique time points.
 #' @param reference a numeric vector of Brier scores for the reference survival.
 #' @param training a numeric vector of Brier scores for the modeled survival in
-#' the training dataset.
+#' the training data set.
 #' @param test a numeric vector of Brier scores for the modeled survival
-#' in the test dataset. Defaults to NULL, which means that no validation errors
+#' in the test data set. Defaults to NULL, which means that no validation errors
 #' are provided.
 #'
 #' @references
@@ -126,7 +126,7 @@
 #' training and test data each.
 #'
 #' @param x a \code{\link{brier}} class object.
-#' @param one_plot logical, should Brier scores for all datasets
+#' @param one_plot logical, should Brier scores for all data sets
 #' be presented in one plot? Defaults to TRUE.
 #' @param palette defines colors of the Bier score curves.
 #' @param linewidth line size.
@@ -151,7 +151,7 @@
                                      test = 'coral3'),
                          linewidth = 0.5,
                          show_reference = TRUE,
-                         cust_theme = ggplot2::theme_classic(), ...) {
+                         cust_theme = theme_classic(), ...) {
 
     ## entry control ------
 

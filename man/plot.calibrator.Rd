@@ -8,7 +8,7 @@
   x,
   type = c("strata", "squares"),
   palette = NULL,
-  cust_theme = survminer::theme_survminer(),
+  cust_theme = theme_survminer(),
   KM_size = 0.5,
   show_cox = TRUE,
   cox_size = 0.5,
@@ -68,7 +68,7 @@ a ggplot object or a list og ggplot objects.
 \description{
 Draws two types of plots:
 \itemize{
-\item a Kaplan-Meier plots of the observed survival (solid line)
+\item Kaplan-Meier plots of the observed survival (solid line)
 and the Cox model-predicted survival in each linear predictor score strata.
 The global calibration measures are presented in plot caption. The legend
 contains the number of observations assigned to each linear predictor score

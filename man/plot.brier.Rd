@@ -10,14 +10,14 @@
   palette = c(reference = "gray60", training = "steelblue", test = "coral3"),
   linewidth = 0.5,
   show_reference = TRUE,
-  cust_theme = ggplot2::theme_classic(),
+  cust_theme = theme_classic(),
   ...
 )
 }
 \arguments{
 \item{x}{a \code{\link{brier}} class object.}
 
-\item{one_plot}{logical, should Brier scores for all datasets
+\item{one_plot}{logical, should Brier scores for all data sets
 be presented in one plot? Defaults to TRUE.}
 
 \item{palette}{defines colors of the Bier score curves.}

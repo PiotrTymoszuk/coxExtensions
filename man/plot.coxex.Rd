@@ -4,12 +4,7 @@
 \alias{plot.coxex}
 \title{Plot a coxex object.}
 \usage{
-\method{plot}{coxex}(
-  x,
-  type = c("fit", "residuals"),
-  cust_theme = survminer::theme_survminer(),
-  ...
-)
+\method{plot}{coxex}(x, type = c("fit", "residuals"), cust_theme = theme_survminer(), ...)
 }
 \arguments{
 \item{x}{a coxex object.}

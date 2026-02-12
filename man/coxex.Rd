@@ -2,9 +2,12 @@
 % Please edit documentation in R/oop_coxex.R
 \name{coxex}
 \alias{coxex}
+\alias{as_coxex}
 \title{Create a coxex object model.}
 \usage{
 coxex(cox_model, data)
+
+as_coxex(cox_model, data)
 }
 \arguments{
 \item{cox_model}{a coxph model.}

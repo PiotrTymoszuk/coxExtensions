@@ -1,4 +1,8 @@
-# Functionality of the ML toolbox for canonical Cox models
+# Functionality of the ML toolbox for canonical Cox models:
+#
+# Cox proportional hazard models of AIDS mortality in Australia's states.
+# The models are trained with the New south Wales data and validated in the
+# remaining states.
 
 # tools ------
 
@@ -17,12 +21,12 @@
 
   mass_aids <- mass_aids %>%
     filter(age >= 18) %>%
-    mutate(state = factor(state, c('NSW', 'VIC', 'QLD', 'Other')),
+    mutate(state = factor(state, c("NSW", "VIC", "QLD", "Other")),
            os_days = death - diag,
            death = as.numeric(status) - 1,
            age_strata = cut(age,
                             c(-Inf, 30, 65, Inf),
-                            c('young adult', 'middle-aged', 'elderly'))) %>%
+                            c("young adult", "middle-aged", "elderly"))) %>%
     map_dfc(function(x) if(is.factor(x)) droplevels(x) else x) %>%
     filter(complete.cases(.)) %>%
     as_tibble
@@ -31,98 +35,89 @@
 
 # Training the models -------
 
-  ## age-stratified model. to find age-independent markers of overall survival
-  ## metaprogramming: to make sure, that the data is always kept with the model
+  ## the models are trained with the AIDS data in New South Wales (NSW).
+  ## A series of models is constructed with nestdd sets of predictor,
+  ## the models are age-stratifies to find age-independent markers of overall survival
+  ##
+  ## The models are constructed metaprogramming: to make sure, that
+  ## the data is always kept with the model
 
-  full_model <-
-    call2('coxph',
-          formula = Surv(os_days, death) ~ strata(age_strata) + diag + T.categ + sex,
-          data = mass_aids$NSW,
-          x = TRUE,
-          y = TRUE) %>%
-    eval %>%
-    as_coxex(data = mass_aids$NSW)
-
-  opt_model1 <-
-    call2('coxph',
-          formula = Surv(os_days, death) ~ strata(age_strata) + diag + T.categ,
-          data = mass_aids$NSW,
-          x = TRUE,
-          y = TRUE) %>%
-    eval %>%
-    as_coxex(data = mass_aids$NSW)
-
-  opt_model2 <-
-    call2('coxph',
-          formula = Surv(os_days, death) ~ strata(age_strata) + diag,
-          data = mass_aids$NSW,
-          x = TRUE,
-          y = TRUE) %>%
-    eval %>%
-    as_coxex(data = mass_aids$NSW)
-
-  null_model <-
-    call2('coxph',
-          formula = Surv(os_days, death) ~ strata(age_strata),
-          data = mass_aids$NSW,
-          x = TRUE,
-          y = TRUE) %>%
-    eval %>%
-    as_coxex(data = mass_aids$NSW)
+  aids_models <-
+    list(full = Surv(os_days, death) ~ strata(age_strata) + diag + T.categ + sex,
+         option1 = Surv(os_days, death) ~ strata(age_strata) + diag + T.categ,
+         option2 = Surv(os_days, death) ~ strata(age_strata) + diag,
+         null = Surv(os_days, death) ~ strata(age_strata)) %>%
+    map(~call2(.fn = "coxph",
+               formula = .x,
+               data = mass_aids$NSW,
+               x = TRUE,
+               y = TRUE)) %>%
+    map(eval) %>%
+    map(as_coxex, data = mass_aids$NSW)
 
   ## comparison of the nested models by analysis of deviance table
-  ## the diagnosis date-only model seems to do the job
 
-  anova(full_model,
-        opt_model1,
-        opt_model2,
-        null_model)
+  anova(aids_models$full, aids_models$null)
 
-# Assumption testing, fit stats, and inference -----------
+  anova(aids_models$full,
+        aids_models$option1,
+        aids_models$option2,
+        aids_models$null) ## all non-null models add to the prediction
 
-  ## assumption test by Grambsch et al.
+  ## the full model is analyzed further
 
-  opt_model2 %>%
-    summary('assumptions')
+  full_models <- list()
+
+  full_models$NSW <- aids_models$full
+
+# The full model: assumption testing, fit stats, and inference -----------
+
+  ## assumption test by Grambsch et al.: potentially violated by
+  ## the `T.categ` variable
+
+  full_models$NSW %>%
+    summary("assumptions")
 
   ## performance stats
 
-  opt_model2 %>%
-    summary('fit')
+  full_models$NSW %>%
+    summary("fit")
 
   ## inference
 
-  opt_model2 %>%
-    summary('inference')
+  full_models$NSW %>%
+    summary("inference")
 
-  ## cross-validated inference and fit stats
+# Cross-validation of the full model --------
 
-  cox_cv <- cvCox(opt_model2, n_folds = 10, n_repeats = 5)
+  ## cross-validated fit stats
 
-  cox_cv %>%
-    summary('inference')
+  full_models_cv <- cvCox(full_models$NSW,
+                          n_folds = 10,
+                          n_repeats = 5)
 
-  cox_cv %>%
-    summary('fit', ci_type = 'bca')
+  full_models_cv %>%
+    summary("fit", ci_type = "bca")
 
   ## last-one-out cross-validation (takes a while)
 
-  cox_loocv <- loocvCox(opt_model2)
+  full_models_loocv <- loocvCox(full_models$NSW)
 
-  cox_loocv %>%
-    summary("inference")
+  full_models_loocv %>%
+    summary("fit", ci_type = "bca")
 
-  cox_loocv %>%
-    summary("fit")
+# Predictions of survival for the remaining states --------
 
-
-# Predictions --------
-
-  cox_predictions <-
-    mlCox(opt_model2,
+  full_models[c("NSW", "VIC", "QLD", "Other")] <-
+    mlCox(full_models$NSW,
           newdata = mass_aids[c("VIC", "QLD", "Other")])
 
-  cox_predictions %>%
-    summary('fit')
+  ## assumptions and fit stats
+
+  full_models %>%
+    map(summary, "assumptions")
+
+  full_models %>%
+    map(summary, "fit")
 
 # END ----

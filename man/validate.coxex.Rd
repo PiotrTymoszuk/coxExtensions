@@ -2,7 +2,7 @@
 % Please edit documentation in R/oop_coxex.R
 \name{validate.coxex}
 \alias{validate.coxex}
-\title{Validate a 'coxex' model.}
+\title{Validate a 'coxex' model with tools of the RMS package.}
 \usage{
 \method{validate}{coxex}(
   fit,
@@ -56,7 +56,7 @@ judging the residual chi-squared}
 \value{
 a data frame with the following variables:
 \itemize{
-\item \code{dataset}: dataset used for computation of the stats
+\item \code{dataset}: data set used for computation of the stats
 \item \code{Dxy}: Somers' DXY rank correlation
 \item \code{R2}: Nagelkerke R-squared
 \item \code{Slope}: slope shrinkage

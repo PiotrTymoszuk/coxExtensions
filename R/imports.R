@@ -72,6 +72,8 @@
 #' @importFrom stats reorder
 #' @importFrom stats complete.cases
 #' @importFrom stats na.omit
+#' @importFrom stats var
+#' @importFrom stats pnorm
 #'
 #' @importFrom pec pec
 #' @importFrom pec crps
@@ -87,6 +89,7 @@
 #' @importFrom survminer surv_summary
 #' @importFrom survminer ggsurvplot
 #' @importFrom survminer ggsurvplot_combine
+#' @importFrom survminer theme_survminer
 #'
 #' @importFrom ggplot2 is.theme
 #' @importFrom ggplot2 ggplot
@@ -95,6 +98,7 @@
 #' @importFrom ggplot2 labs
 #' @importFrom ggplot2 geom_line
 #' @importFrom ggplot2 theme
+#' @importFrom ggplot2 theme_classic
 #' @importFrom ggplot2 geom_point
 #' @importFrom ggplot2 scale_fill_manual
 #' @importFrom ggplot2 position_jitter
@@ -108,7 +112,7 @@
 #'
 #' @importFrom ggrepel geom_text_repel
 #'
-#' @importFrom coxed bca
+#' @importFrom grDevices colors
 #'
 #' @importFrom caret createMultiFolds
 #'

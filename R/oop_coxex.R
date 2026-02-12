@@ -10,9 +10,12 @@
 #'
 #' @description Generates a coxex model given a coxph object model and the
 #' modeling data frame (used for model construction).
+#'
 #' @param cox_model a coxph model.
 #' @param data a data frame used for model construction.
+#'
 #' @return a coxex object.
+#'
 #' @export
 
   coxex <- function(cox_model, data) {
@@ -41,12 +44,7 @@
 
   }
 
-#' Create a coxex object model.
-#'
-#' @description Generates a coxex model given a coxph object model and the
-#' modeling data frame (used for model construction).
-#' @inheritParams coxex
-#' @return a coxex object.
+#' @rdname coxex
 #' @export
 
   as_coxex <- function(cox_model, data) {
@@ -85,17 +83,17 @@
 
 # Appearance -------
 
-  #' Print method for `coxex` objects.
-  #'
-  #' @description
-  #' Print method for `coxex` class.
-  #'
-  #' @param x a `coxex` object.
-  #' @param ... extra arguments, currently none.
-  #'
-  #' @return None, called for its side effects.
-  #'
-  #' @export
+#' Print method for `coxex` objects.
+#'
+#' @description
+#' Print method for `coxex` class.
+#'
+#' @param x a `coxex` object.
+#' @param ... extra arguments, currently none.
+#'
+#' @return None, called for its side effects.
+#'
+#' @export
 
   print.coxex <- function(x, ...) {
 
@@ -349,13 +347,15 @@
 
 # Validation --------
 
-#' Validate a 'coxex' model.
+#' Validate a 'coxex' model with tools of the RMS package.
 #'
 #' @description Provides an access to validation stats obtained e.g.
 #' by cross-validation or bootstraping via \code{\link[rms]{validate}}.
+#'
 #' @details See: \code{\link[rms]{validate.cph}}.
+#'
 #' @return a data frame with the following variables:
-#' * `dataset`: dataset used for computation of the stats
+#' * `dataset`: data set used for computation of the stats
 #' * `Dxy`: Somers' DXY rank correlation
 #' * `R2`: Nagelkerke R-squared
 #' * `Slope`: slope shrinkage
@@ -430,18 +430,21 @@
 #'
 #' @description Plots a coxex object: diagnostic graphs of residuals
 #' (type = 'residuals') or outcome vs fitted Kaplan-Meier plot ('fit').
+#'
 #' @param x a coxex object.
 #' @param type type of the plots, 'fit' by default.
 #' @param cust_theme customized plot theme provided by the user.
 #' @param ... extra arguments passed to \code{\link{get_cox_qc_plots}} or
 #' \code{\link{plot_cox_fit}}.
+#'
 #' @return a ggplot or a list of ggplot residual plots.
+#'
 #' @export plot.coxex
 #' @export
 
   plot.coxex <- function(x,
                          type = c('fit', 'residuals'),
-                         cust_theme = survminer::theme_survminer(), ...) {
+                         cust_theme = theme_survminer(), ...) {
 
     ## entry control
 

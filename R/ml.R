@@ -253,7 +253,7 @@
 
     eval_envir <- env(!!!as.list(data))
 
-    surv_quo <- rlang::parse_quo(form_terms[2], eval_envir)
+    surv_quo <- parse_quo(form_terms[2], eval_envir)
 
     surv_object <- unclass(eval_tidy(surv_quo))
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{get_cox_validation}
 \alias{get_cox_validation}
-\title{Validation statistics for 'coxph' and 'coxex' models.}
+\title{Validation statistics for 'coxph' and 'coxex' models with tools of the RMS package.}
 \usage{
 get_cox_validation(
   cox_model,

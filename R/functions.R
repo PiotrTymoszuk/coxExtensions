@@ -10,8 +10,10 @@
 #'
 #' @description Retrieves inference statistic for a Cox proportional hazard
 #' model. A wrapper around \code{\link[survival]{summary.coxph}}.
+#'
 #' @return a data frame with the model estimates, confidence intervals
 #' and p values.
+#'
 #' @param cox_model a CoxpPH model or a coxex object.
 #' @param trans_function function used for transformation of the estimates and
 #' confidence intervals, identity() by default.
@@ -19,6 +21,7 @@
 #' @references
 #' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
 #' the Cox Model. (Springer Verlag, 2000).
+#'
 #' @md
 #' @export
 
@@ -123,8 +126,10 @@
 #'
 #' @description Retrieves model residuals and predicted values.
 #' A wrapper around \code{\link[broom]{augment}}.
+#'
 #' @return a data frame with the predicted values, residuals and expected normal
 #' values for the residuals.
+#'
 #' @param cox_model a CoxpPH model or a coxex object.
 #' @param type.predict type of the prediction, 'lp', linear predictor score by
 #' default. See: \code{\link[survival]{predict.coxph}} for details.
@@ -133,9 +138,11 @@
 #' @param data the data frame used for the model construction. Ignored,
 #' if coxex object provided.
 #' @param ... additional arguments passed to \code{\link[broom]{augment}}.
+#'
 #' @references
 #' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
 #' the Cox Model. (Springer Verlag, 2000).
+#'
 #' @md
 #' @export
 
@@ -192,16 +199,21 @@
 #' (mean squared error), RMSE (root MSE),  concordance (C) index
 #' with 95% confidence intervals (normality assumption) and the
 #' integrated Brier score (IBS, see: \code{\link[pec]{pec}}).
+#'
 #' @return a data frame with the statistic values.
+#'
 #' @param rsq_type type of R-squared statistic, see: \code{\link[survMisc]{rsq}}.
 #' @param ... extra arguments passed to \code{\link{get_cox_qc}}.
+#'
 #' @inheritParams get_cox_qc
+#'
 #' @references
 #' * Therneau, T. M. & Grambsch, P. M. Modeling Survival Data: Extending
 #' the Cox Model. (Springer Verlag, 2000).
 #' * Harrell, F. E., Lee, K. L. & Mark, D. B. Multivariable prognostic
 #' models: Issues in developing models, evaluating assumptions and adequacy,
 #' and measuring and reducing errors. Stat. Med. 15, 361–387 (1996).
+#'
 #' @md
 #' @export
 
@@ -285,8 +297,10 @@
 #' @description Computes prediction error curves and
 #' integrated Brier score (IBS)
 #' for a Cox model using \code{\link[pec]{pec}} and \code{\link[pec]{crps}}.
+#'
 #' @return a numeric vector with IBS values, a \code{\link[pec]{pec}} class
 #' or a \code{\link{brier}} class object.
+#'
 #' @param cox_model a Cox model of the `coxph` or `coxex` class.
 #' @param data the data frame used for the model construction. Ignored,
 #' if coxex object provided.
@@ -397,15 +411,18 @@
 #'
 #' @description Checks the normality and proportional hazard assumption for
 #' a CoxPH model. Technically, the normality assumption is tested with
-#' Shapiro-wil test, the proportionality by \code{\link[survival]{cox.zph}}.
+#' Shapiro-Wilk test, the proportionality by \code{\link[survival]{cox.zph}}.
+#'
 #' @return a data frame with the normality testing results and the
 #' proportional hazard assumption testing for the model variables and the
 #' global model.
+#'
 #' @inheritParams get_cox_qc
 #' @param ... extra arguments passed to \code{\link{get_cox_qc}}
 #' @references
 #' * Grambsch, P. M. & Therneau, T. M. Proportional Hazards Tests and
 #' Diagnostics Based on Weighted Residuals. Biometrika 81, 515 (1994).
+#'
 #' @md
 #' @export
 
@@ -793,11 +810,13 @@
 
 # Validation statistics --------
 
-#' Validation statistics for 'coxph' and 'coxex' models.
+#' Validation statistics for 'coxph' and 'coxex' models with tools of the RMS package.
 #'
 #' @description Provides an access to validation stats obtained e.g.
 #' by cross-validation or bootstraping via \code{\link[rms]{validate}}.
+#'
 #' @details See: \code{\link[rms]{validate.cph}}.
+#'
 #' @return a data frame with the following variables:
 #' * `dataset`: dataset used for computation of the stats
 #' * `Dxy`: Somers' DXY rank correlation

@@ -286,7 +286,7 @@
 #'
 #' @description Draws two types of plots:
 #'
-#' * a Kaplan-Meier plots of the observed survival (solid line)
+#' * Kaplan-Meier plots of the observed survival (solid line)
 #' and the Cox model-predicted survival in each linear predictor score strata.
 #' The global calibration measures are presented in plot caption. The legend
 #' contains the number of observations assigned to each linear predictor score
@@ -330,13 +330,14 @@
 #' to none. Used only if `type = 'squares'`.
 #' @param ... extra arguments passed to \code{\link[survminer]{ggsurvplot}}
 #' (if `type = 'strata'`) or to \code{\link{plot_squares}}.
+#'
 #' @export plot.calibrator
 #' @export
 
   plot.calibrator <- function(x,
                               type = c('strata', 'squares'),
                               palette = NULL,
-                              cust_theme = survminer::theme_survminer(),
+                              cust_theme = theme_survminer(),
                               KM_size = 0.5,
                               show_cox = TRUE,
                               cox_size = 0.5,
@@ -372,7 +373,7 @@
 
       if(!is.null(color_seed)) set.seed(color_seed)
 
-      av_colors <- grDevices::colors()
+      av_colors <- colors()
 
       if(type == 'strata') {
 

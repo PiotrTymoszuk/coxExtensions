@@ -12,10 +12,10 @@ brier(times, reference, training, test = NULL)
 \item{reference}{a numeric vector of Brier scores for the reference survival.}
 
 \item{training}{a numeric vector of Brier scores for the modeled survival in
-the training dataset.}
+the training data set.}
 
 \item{test}{a numeric vector of Brier scores for the modeled survival
-in the test dataset. Defaults to NULL, which means that no validation errors
+in the test data set. Defaults to NULL, which means that no validation errors
 are provided.}
 }
 \value{
@@ -28,7 +28,7 @@ or \code{group_by} provided by the \code{dplyr} package.
 }
 \description{
 Generates a \code{brier} class object based on a list
-of unique times, Bier scores per timepoint e.g. calculated with
+of unique times, Bier scores per time point e.g. calculated with
 \code{\link[pec]{pec}} for the reference, training and test data.
 }
 \references{

@@ -26,6 +26,6 @@ a list of ggplot objects.
 }
 \description{
 Generates standard residual plots for a CoxPH model: residuals
-vs fitted, stabdardized residuals vs fitted, squared standardized residuals
+vs fitted, standardized residuals vs fitted, squared standardized residuals
 vs fitted and a quantile-quantile plot of the standardized residuals.
 }

@@ -9,7 +9,7 @@
 #' Residuals plots for a CoxPH model.
 #'
 #' @description Generates standard residual plots for a CoxPH model: residuals
-#' vs fitted, stabdardized residuals vs fitted, squared standardized residuals
+#' vs fitted, standardized residuals vs fitted, squared standardized residuals
 #' vs fitted and a quantile-quantile plot of the standardized residuals.
 #' @return a list of ggplot objects.
 #' @param cox_model a CoxpPH model or a coxex object.

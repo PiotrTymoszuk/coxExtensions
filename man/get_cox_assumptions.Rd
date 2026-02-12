@@ -34,7 +34,7 @@ global model.
 \description{
 Checks the normality and proportional hazard assumption for
 a CoxPH model. Technically, the normality assumption is tested with
-Shapiro-wil test, the proportionality by \code{\link[survival]{cox.zph}}.
+Shapiro-Wilk test, the proportionality by \code{\link[survival]{cox.zph}}.
 }
 \references{
 \itemize{
