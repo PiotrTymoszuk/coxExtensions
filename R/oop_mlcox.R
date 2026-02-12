@@ -83,7 +83,7 @@
 #' Refers only to objects generated with \code{\link{cvCox}} and
 #' `type = 'inference'` or `type = 'fit'`, and ignored otherwise.
 #' @param ci_type type of confidence intervals: percentile (default) or Efron's
-#' BCA computed by \code{\link[coxed]{bca}}.
+#' BCA.
 #'
 #' @export summary.mlcx
 #' @export
