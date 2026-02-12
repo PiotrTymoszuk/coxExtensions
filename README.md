@@ -502,6 +502,8 @@ For such analysis, a plot of Brier scores for our models and a null model is par
 
 ```
 
+<img width="971" height="496" alt="brier_scores" src="https://github.com/user-attachments/assets/061d2ebe-eb62-46dc-9fe5-71b1fe0961eb" />
+
 ### Assessment of calibration with the D'Agostino-Nam method
 
 Finally, we will assess the model's calibration with so called D'Agostino - Nam 
@@ -570,3 +572,4 @@ to poor differences in survival between the second and third quartile of the lin
     calibrator_plots$test_multi
 
 ```
+<img width="867" height="741" alt="dagostino_plots" src="https://github.com/user-attachments/assets/9eb1870a-d8f1-4ecd-8c1d-fb1d515bde8e" />
