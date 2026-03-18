@@ -432,17 +432,17 @@
 
     if('label' %in% names(x$strata_calibration)) {
 
-      strata_tags <- paste(x$strata_calibration$label,
-                           x$strata_calibration$n,
-                           sep = '\nn = ')
+      strata_tags <- x$strata_calibration$label
 
     } else {
 
-      strata_tags <- paste(x$strata_calibration$strata,
-                           x$strata_calibration$n,
-                           sep = '\nn = ')
+      strata_tags <- x$strata_calibration$strata
 
     }
+
+    strata_tags <- paste0(strata_tags,
+                          "\ntotal: n = ", x$strata_calibration$n,
+                          "\nevents: n = ", x$strata_calibration$km_events)
 
     strata_tags <- set_names(strata_tags, x$strata_calibration$strata)
 

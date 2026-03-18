@@ -23,7 +23,7 @@ Refers only to objects generated with \code{\link{cvCox}} and
 \code{type = 'inference'} or \code{type = 'fit'}, and ignored otherwise.}
 
 \item{ci_type}{type of confidence intervals: percentile (default) or Efron's
-BCA computed by \code{\link[coxed]{bca}}.}
+BCA.}
 
 \item{...}{extra arguments passed to \code{\link{get_cox_estimates}},
 \code{\link{get_cox_stats}} or \code{\link{get_cox_assumptions}}.}
